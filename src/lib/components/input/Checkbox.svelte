@@ -19,7 +19,7 @@
 			<Check className="w-3 h-3 text-gray-800" />
 		</div>
 
-		<div class="ml-3 text-gray-400 text-[15px]">{label}</div>
+		<div class="ml-3 text-gray-400 text-base">{label}</div>
 	</div>
 
 	{#if collapseable}

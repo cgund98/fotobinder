@@ -8,23 +8,32 @@
 	import Checkbox from '../input/Checkbox.svelte';
 	import TagBlock from './TagBlock.svelte';
 	import Close from '../icons/Close.svelte';
-	import TextInput from '../input/TextInput.svelte';
+	import SearchInput from '../input/SearchInput.svelte';
+	import IconButton, { Variant as IconVariant } from '../button/IconButton.svelte';
+
+	export let onClose: () => void = () => {};
+	export let onNewTag: () => void = () => {};
 </script>
 
 <Modal>
 	<div class="flex flex-row justify-between items-center">
 		<h1 class="text-lg font-bold pb-1">Edit Tags</h1>
-		<div role="button" class="-mt-2">
-			<Close className="text-gray-600" />
+		<div role="button" class="-mt-1">
+			<IconButton
+				onClick={onClose}
+				icon={Close}
+				variant={IconVariant.Embedded}
+				label="Close Window"
+			/>
 		</div>
 	</div>
 	<div class="w-full h-2">
 		<Separator className="bg-gray-700" />
 	</div>
 	<div class="w-full flex flex-row justify-between mt-2">
-		<TextInput placeholder="Search" className="basis-[250px]" />
+		<SearchInput placeholder="Search" className="basis-[250px]" />
 		<div>
-			<Button variant={Variant.Secondary} title="Create Tag">
+			<Button variant={Variant.Secondary} onClick={onNewTag} title="Create Tag">
 				<Plus className="w-[15px] h-full" />
 			</Button>
 		</div>
@@ -80,9 +89,9 @@
 	</div>
 	<div class="w-full flex flex-row justify-between content-bottom mt-2">
 		<div class="flex flex-col justify-between">
-			<p class="text-gray-500 inline-block my-auto text-[15px]">Editing 8 Images</p>
+			<p class="text-gray-500 inline-block my-auto text-base">Editing 8 Images</p>
 		</div>
-		<div class="flex space-x-2">
+		<div class="flex space-x-4">
 			<Button variant={Variant.Warn} title="Discard Changes">
 				<Trash className="w-[16px] h-full" />
 			</Button>

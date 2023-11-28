@@ -2,6 +2,12 @@
 export default {
   content: ['./src/**/*.{html,js,svelte,ts}'],
   theme: {
+    fontSize: {
+      sm: ['13px', '20px'],
+      base: ['15px', '24px'],
+      lg: ['20px', '28px'],
+      xl: ['24px', '32px'],
+    },
     extend: {
       colors: {
         'bg-gray': '#1c1c1e',

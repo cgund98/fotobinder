@@ -3,6 +3,8 @@
 
 	export let checked: boolean = false;
 
+	export let onView: () => void = () => {};
+
 	let hovered = false;
 </script>
 
@@ -17,7 +19,7 @@
 	role="listitem"
 >
 	<div class="absolute top-0 z-10 w-full h-full ease-out {hovered ? 'bg-gray-900/20' : ''}">
-		<div class="absolute top-2 left-2">
+		<div role="button" on:click={onView} class="absolute top-2 left-2">
 			<CheckBoxRound active={checked} show={hovered} />
 		</div>
 	</div>
