@@ -18,9 +18,9 @@
 
 	export let onClick: MouseEventHandler<HTMLButtonElement> = () => {};
 
-	const primaryCSS = 'bg-teal-400 text-gray-800';
+	const primaryCSS = 'bg-teal-400 text-gray-800 disabled:bg-teal-700';
 	const secondaryCSS = 'bg-gray-700 text-teal-500';
-	const warnCSS = 'bg-red-400 text-gray-800';
+	const warnCSS = 'bg-red-400 text-gray-800 disabled:bg-red-700';
 	const grayCSS = 'bg-gray-700 text-gray-300';
 
 	let css = primaryCSS;
@@ -34,7 +34,7 @@
 <button
 	{disabled}
 	on:click={onClick}
-	class="h-9 items-center px-3 flex {shadowCSS} font-medium rounded-md disabled:opacity-50 disabled:shadow-none space-x-2 {css} {className}"
+	class="h-9 items-center px-3 flex {shadowCSS} font-medium rounded-md disabled:opacity-50 disabled:shadow-none space-x-1.5 {css} {className}"
 >
 	<span class="text-[14px] -mt-[1px]">{title}</span>
 	<slot />

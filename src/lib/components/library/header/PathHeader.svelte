@@ -14,12 +14,12 @@
 			<div class="mx-2 w-">
 				<Ellipsis className="h-full w-8" />
 			</div>
-			<ChevronDown className="-rotate-90 stroke-gray-600 w-4 h-full" />
+			<ChevronDown className="-rotate-90 text-gray-600 w-4 h-full" />
 		{/if}
 		{#each active_path as part, i}
 			<div class="text-gray-100 text-xl font-bold mx-2 mt-[1px]">{part}</div>
 			{#if i != active_path.length - 1}
-				<ChevronDown className="-rotate-90 stroke-gray-600 w-4 h-full" />
+				<ChevronDown className="-rotate-90 text-gray-600 w-4 h-full" />
 			{/if}
 		{/each}
 	</div>

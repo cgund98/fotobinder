@@ -3,10 +3,10 @@
 	import Separator from '../../decoration/Separator.svelte';
 
 	import Search from '../../icons/Search.svelte';
-	import Collection from '../../icons/Collection.svelte';
+	import Collection from '../../icons/FolderSolid.svelte';
 	import Library from '../../icons/Library.svelte';
 
-	const iconClassNames = 'stroke-gray-500 h-[20px] w-[20px]';
+	const iconClassNames = 'text-gray-500 h-[20px] w-[20px]';
 	const sepClassNames = 'px-2';
 </script>
 
@@ -23,7 +23,7 @@
 		<Separator className={sepClassNames} />
 
 		<Entry title="Library" href="/library/local" collapseable>
-			<Library className={iconClassNames + ' !stroke-teal-500'} />
+			<Library className={iconClassNames + ' !text-teal-500'} />
 		</Entry>
 
 		<Separator className={sepClassNames} />

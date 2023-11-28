@@ -1,18 +1,15 @@
 <script lang="ts">
-	import Search from '../icons/Search.svelte';
+	import ChevronDown from '../icons/ChevronDown.svelte';
 
 	export let className: string = '';
 	export let label: string = '';
-	export let placeholder: string = 'Placeholder';
+	export let placeholder: string = '';
 	export let open: boolean = false;
+	export let options: { label: string; value: string }[];
+	export let value: string;
 
-	const items = [
-		{ label: 'Item' },
-		{ label: 'Item' },
-		{ label: 'Item' },
-		{ label: 'Item' },
-		{ label: 'Item' }
-	];
+	// Parse label from current set of options
+	const curLabel = options.filter((o) => o.value === value)[0]?.label;
 </script>
 
 <div class="flex flex-col py-1 px-1 {className}">
@@ -25,9 +22,12 @@
 		<div class="flex flex-row text-gray-100 bg-gray-700 px-3 py-2 rounded-lg">
 			<input
 				{placeholder}
+				value={curLabel}
 				class="placeholder:text-gray-500 bg-transparent caret-gray-100 appearance-none w-full accent-transparent focus:outline-none text-base"
 			/>
-			<div><Search className="text-gray-500 w-[20px]" /></div>
+			<div class="flex flex-col justify-around">
+				<ChevronDown className="text-gray-500 w-[20px]" />
+			</div>
 		</div>
 
 		{#if open}
@@ -35,9 +35,9 @@
 				class="z-10 inset-x-0 text-base list-none bg-gray-700 rounded-lg divide-y divide-gray-100 shadow-xl absolute my-2 max-h-32 overflow-y-scroll"
 			>
 				<ul class="">
-					{#each items as item}
+					{#each options as option}
 						<li class="block py-2 px-4 text-base text-gray-300 hover:bg-gray-600 cursor-pointer">
-							{item.label}
+							{option.label}
 						</li>
 					{/each}
 				</ul>

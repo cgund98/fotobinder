@@ -15,7 +15,7 @@
 	</a>
 	<div>
 		{#if collapseable}
-			<ChevronDown className="stroke-gray-600 w-[20px]" />
+			<ChevronDown className="text-gray-600 w-[20px]" />
 		{/if}
 	</div>
 </div>

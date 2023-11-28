@@ -1,21 +1,51 @@
 <script lang="ts">
 	export let title = '';
+	export let delay = 750;
+	let show = false;
 	let isHovered = false;
-	let x: number;
-	let y: number;
+	let x: number = 0;
+	let y: number = 0;
+
+	const HORIZ_THRESHOLD = 200;
+	const VERT_THRESHOLD = 100;
+
+	let horCSS = '';
+	let vertCSS = '';
+
+	const setCSS = () => {
+		horCSS = `left: ${x}px;`;
+		const fromRight = window.innerWidth - x;
+		if (fromRight < HORIZ_THRESHOLD) horCSS = `right: ${fromRight}px;`;
+
+		vertCSS = `top: ${y}px;`;
+		const fromBottom = window.innerHeight - y;
+		if (fromBottom < VERT_THRESHOLD) vertCSS = `bottom: ${fromBottom}px;`;
+	};
 
 	const mouseOver = (event: MouseEvent) => {
 		isHovered = true;
-		x = event.pageX + 5;
-		y = event.pageY + 5;
+		x = event.pageX;
+		y = event.pageY;
+
+		setCSS();
+
+		// Wait to see if user holds mouse before showing the tooltip
+		if (!show)
+			setTimeout(() => {
+				console.log(horCSS);
+				show = isHovered;
+			}, delay);
 	};
-	function mouseMove(event: MouseEvent) {
-		x = event.pageX + 5;
-		y = event.pageY + 5;
-	}
-	function mouseLeave() {
+	const mouseMove = (event: MouseEvent) => {
+		x = event.pageX;
+		y = event.pageY;
+
+		setCSS();
+	};
+	const mouseLeave = () => {
+		show = false;
 		isHovered = false;
-	}
+	};
 </script>
 
 <div
@@ -29,9 +59,9 @@
 	<slot />
 </div>
 
-{#if isHovered}
+{#if show}
 	<div
-		style="top: {y}px; left: {x}px;"
+		style="{vertCSS}; {horCSS}"
 		class="fixed box-shadow rounded-md px-2 py-1 text-sm bg-teal-900 z-50"
 	>
 		{title}
