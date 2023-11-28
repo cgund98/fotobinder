@@ -3,6 +3,7 @@
 	import FolderCard from '../../../lib/components/library/folder/FolderCard.svelte';
 	import Separator from '../../../lib/components/decoration/Separator.svelte';
 	import ImageCard from '../../../lib/components/library/image/ImageCard.svelte';
+	import EditTagModal from '../../../lib/components/tags/EditTagModal.svelte';
 
 	const folders = [
 		{ name: 'Folder' },
@@ -47,3 +48,5 @@
 		</div>
 	{/each}
 </div>
+
+<EditTagModal />
