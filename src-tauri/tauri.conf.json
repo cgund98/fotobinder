@@ -15,6 +15,14 @@
 			"shell": {
 				"all": false,
 				"open": true
+			},
+			"dialog": {
+				"all": true,
+				"ask": true,
+				"confirm": true,
+				"message": true,
+				"open": true,
+				"save": true
 			}
 		},
 		"bundle": {
@@ -37,8 +45,8 @@
 				"fullscreen": false,
 				"resizable": true,
 				"title": "fotobinder",
-				"width": 1200,
-				"height": 800
+				"width": 1070,
+				"height": 700
 			}
 		]
 	}

@@ -9,6 +9,7 @@
 	import Tag from '../../../lib/components/icons/Tag.svelte';
 	import ChevronDown from '../../../lib/components/icons/ChevronDown.svelte';
 	import ImageDetailsCard from '../../../lib/components/library/image/ImageDetailsCard.svelte';
+	import AddToCollectionModal from '../../../lib/components/collections/AddToCollectionModal.svelte';
 
 	const folders = [
 		{ name: 'Folder' },
@@ -34,6 +35,7 @@
 	let showEditTags = false;
 	let showNewTag = false;
 	let showImageDetails = false;
+	let showAddToCollection = false;
 </script>
 
 <PathHeader path={['Local Files', 'Downloads', 'Mountains', 'Peaks']} />
@@ -50,11 +52,18 @@
 			className="disabled:bg-teal-700"
 			onClick={() => {
 				showEditTags = true;
+				console.log(showEditTags);
 			}}
 		>
 			<Tag className="w-[15px] -mt-[1px]" />
 		</Button>
-		<Button title="Actions" variant={Variant.Secondary}>
+		<Button
+			title="Actions"
+			onClick={() => {
+				showAddToCollection = true;
+			}}
+			variant={Variant.Secondary}
+		>
 			<ChevronDown className="w-[16px] mt-[1px]" />
 		</Button>
 	</div>
@@ -96,6 +105,7 @@
 		}}
 	/>
 {/if}
+
 {#if showNewTag}
 	<NewTagModal
 		onClose={() => {
@@ -111,5 +121,13 @@
 		}}
 		name="Mountain.jpg"
 		src="/image/mountain.jpg"
+	/>
+{/if}
+
+{#if showAddToCollection}
+	<AddToCollectionModal
+		onClose={() => {
+			showAddToCollection = false;
+		}}
 	/>
 {/if}

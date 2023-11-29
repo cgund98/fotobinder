@@ -22,7 +22,7 @@
 
 		<Separator className={sepClassNames} />
 
-		<Entry title="Library" href="/library/local" collapseable>
+		<Entry title="Library" href="/library" collapseable>
 			<Library className={iconClassNames + ' !text-teal-500'} />
 		</Entry>
 

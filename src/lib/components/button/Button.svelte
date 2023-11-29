@@ -18,9 +18,9 @@
 
 	export let onClick: MouseEventHandler<HTMLButtonElement> = () => {};
 
-	const primaryCSS = 'bg-teal-400 text-gray-800 disabled:bg-teal-700';
+	const primaryCSS = 'bg-teal-400 text-gray-800 disabled:bg-teal-300';
 	const secondaryCSS = 'bg-gray-700 text-teal-500';
-	const warnCSS = 'bg-red-400 text-gray-800 disabled:bg-red-700';
+	const warnCSS = 'bg-gray-700 text-red-400 disabled:bg-red-300';
 	const grayCSS = 'bg-gray-700 text-gray-300';
 
 	let css = primaryCSS;

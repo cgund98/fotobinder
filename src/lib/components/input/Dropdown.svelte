@@ -19,12 +19,12 @@
 		</h3>
 	{/if}
 	<div class="relative">
-		<div class="flex flex-row text-gray-100 bg-gray-700 px-3 py-2 rounded-lg">
-			<input
-				{placeholder}
-				value={curLabel}
+		<div role="button" class="flex flex-row text-gray-100 bg-gray-700 px-3 py-2 rounded-lg">
+			<p
 				class="placeholder:text-gray-500 bg-transparent caret-gray-100 appearance-none w-full accent-transparent focus:outline-none text-base"
-			/>
+			>
+				{curLabel ? curLabel : placeholder}
+			</p>
 			<div class="flex flex-col justify-around">
 				<ChevronDown className="text-gray-500 w-[20px]" />
 			</div>

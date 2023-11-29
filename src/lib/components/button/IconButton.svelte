@@ -35,7 +35,7 @@
 	{/if}
 
 	{#if variant == Variant.Embedded}
-		<button on:click={onClick} class="bg-gray-00 text-gray-600 {commonCSS}">
+		<button on:click={onClick} class="bg-gray-00 text-gray-600 hover:text-gray-100 {commonCSS}">
 			<svelte:component this={icon} {...props} />
 		</button>
 	{/if}

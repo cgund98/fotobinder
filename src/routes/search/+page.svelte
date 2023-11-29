@@ -75,7 +75,7 @@
 		<div class="flex flex-col space-y-1">
 			{#each rules as r}
 				<div class="flex flex-col justify-around h-[48px]">
-					<IconButton icon={Trash} variant={IconVariant.Embedded} label="Remove" />
+					<IconButton icon={Trash} variant={IconVariant.Embedded} label="Remove Rule" />
 				</div>
 			{/each}
 		</div>
