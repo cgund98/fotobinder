@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { invoke } from '@tauri-apps/api/tauri';
 	import Button, { Variant } from '../../lib/components/button/Button.svelte';
 	import Separator from '../../lib/components/decoration/Separator.svelte';
 	import ChevronDown from '../../lib/components/icons/ChevronDown.svelte';
@@ -19,7 +20,13 @@
 	</div>
 
 	<div class="flex flex-row space-x-3">
-		<Button title="Actions" variant={Variant.Secondary} disabled>
+		<Button
+			title="Actions"
+			variant={Variant.Secondary}
+			onClick={() => {
+				showNewSource = true;
+			}}
+		>
 			<ChevronDown className="w-[16px] mt-[1px]" />
 		</Button>
 	</div>
@@ -42,7 +49,13 @@
 
 {#if showNewSource}
 	<NewSourceModal
-		onClose={() => {
+		onClose={async () => {
+			try {
+				console.log('creating source...');
+				console.log(await invoke('create_source', { name: 'name' }));
+			} catch (err) {
+				console.log('error:', err);
+			}
 			showNewSource = false;
 		}}
 	/>
