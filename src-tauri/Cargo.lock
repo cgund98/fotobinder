@@ -748,6 +748,7 @@ dependencies = [
 name = "fotobinder"
 version = "0.0.1"
 dependencies = [
+ "anyhow",
  "chrono",
  "r2d2",
  "r2d2_sqlite",
@@ -758,6 +759,7 @@ dependencies = [
  "strum_macros",
  "tauri",
  "tauri-build",
+ "thiserror",
  "uuid",
 ]
 

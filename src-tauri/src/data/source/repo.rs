@@ -1,5 +1,4 @@
 use super::entity;
-use crate::errors;
 
 pub struct Repo {
     pool: crate::state::PoolType,
@@ -10,7 +9,10 @@ pub fn new(pool: crate::state::PoolType) -> Repo {
 }
 
 impl Repo {
-    pub fn save(&self, source: entity::Source) -> Result<entity::Source, errors::app::Error> {
+    pub fn save(
+        &self,
+        source: entity::Source,
+    ) -> anyhow::Result<entity::Source, crate::errors::AppError> {
         let d_source = entity::DbSource::from(source);
 
         self.pool.get().unwrap().execute(
@@ -35,7 +37,7 @@ impl Repo {
         Ok(new_source)
     }
 
-    pub fn get_by_id(&self, id: &str) -> Result<entity::Source, errors::app::Error> {
+    pub fn get_by_id(&self, id: &str) -> anyhow::Result<entity::Source, crate::errors::AppError> {
         let pool = self.pool.get().unwrap();
         let mut stmt = pool
             .prepare("SELECT id, source_type, name, path, synced_at FROM sources WHERE id = ?1")?;
@@ -53,7 +55,7 @@ impl Repo {
 
         match ent_iter.last() {
             Some(ent) => Ok(entity::Source::from(ent.unwrap())),
-            None => Err(errors::app::not_found()),
+            None => Err(crate::errors::AppError::NotFound(format!("id = '{}'", id))),
         }
     }
 }

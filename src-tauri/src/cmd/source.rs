@@ -1,9 +1,15 @@
-use crate::{data::source::entity, state::ServiceAccess};
+use crate::{data::source::entity, errors::AppError, state::ServiceAccess};
 
 #[tauri::command]
-pub fn create_source(name: &str, handle: tauri::AppHandle) -> Result<entity::DbSource, String> {
+pub fn create_source(name: &str, handle: tauri::AppHandle) -> Result<entity::DbSource, AppError> {
     handle
         .source_ctrl(|ctrl| ctrl.create(name))
         .map(entity::DbSource::from)
-        .map_err(|error| error.to_string())
+}
+
+#[tauri::command]
+pub fn get_source(id: &str, handle: tauri::AppHandle) -> Result<entity::DbSource, AppError> {
+    handle
+        .source_ctrl(|ctrl| ctrl.get_by_id(id))
+        .map(entity::DbSource::from)
 }
