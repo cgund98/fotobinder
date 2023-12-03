@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { create } from '../../../api/source';
+	import type { Source } from '../../../api/source';
+
 	import Button, { Variant } from '../../button/Button.svelte';
 	import IconButton, { Variant as IconVariant } from '../../button/IconButton.svelte';
 	import Separator from '../../decoration/Separator.svelte';
@@ -6,12 +9,44 @@
 	import Trash from '../../icons/Trash.svelte';
 	import Dropdown from '../../input/Dropdown.svelte';
 	import PathInput from '../../input/PathInput.svelte';
-	import SearchBox from '../../input/SearchBox.svelte';
 	import TextInput from '../../input/TextInput.svelte';
 	import Modal from '../../layout/Modal.svelte';
 	import Close from '../../icons/Close.svelte';
+	import { catchBad } from '../../../store/alerts';
 
-	export let onClose: () => void = () => {};
+	export let onClose: (source?: Source) => void = () => {};
+
+	const typeOptions = [{ label: 'Local', value: 'Local' }];
+
+	let name: string = '';
+	let path: string = '';
+	let type: string = typeOptions[0].value;
+
+	const handleSubmit = async () => {
+		try {
+			const source = await create(name, type, path);
+			onClose(source);
+		} catch (err: any) {
+			catchBad(err);
+		}
+	};
+
+	// Validate inputs
+	const validate = (name: string, path: string, type: string) => {
+		let isValid = true;
+
+		// Validate name
+		isValid = isValid && name.length > 0;
+
+		// Validate path
+		isValid = isValid && path.length > 0;
+
+		// Validate type
+		isValid = isValid && type.length > 0;
+
+		return isValid;
+	};
+	$: valid = validate(name, path, type);
 </script>
 
 <Modal>
@@ -19,7 +54,7 @@
 		<h1 class="text-lg font-bold pb-1">New Library Source</h1>
 		<div role="button" class="-mt-1">
 			<IconButton
-				onClick={onClose}
+				onClick={() => onClose()}
 				icon={Close}
 				variant={IconVariant.Embedded}
 				label="Close Window"
@@ -32,27 +67,27 @@
 
 	<div class="flex space-x-6">
 		<div class="grow">
-			<TextInput placeholder="Name" label="Name" />
+			<TextInput bind:value={name} placeholder="Name" label="Name" />
 		</div>
 
 		<div class="w-48">
-			<Dropdown options={[{ label: 'Local', value: 'local' }]} value="local" label="Type" />
+			<Dropdown bind:value={type} options={typeOptions} label="Type" />
 		</div>
 	</div>
 
 	<div class="flex space-x-6">
 		<div class="grow">
-			<PathInput placeholder="Path" label="Path" />
+			<PathInput bind:value={path} placeholder="Path" label="Path" />
 		</div>
 	</div>
 
 	<div class="w-full flex flex-row justify-between content-bottom mt-4">
 		<div class="flex flex-col justify-between"></div>
 		<div class="flex space-x-4">
-			<Button variant={Variant.Warn} title="Discard">
+			<Button onClick={() => onClose()} variant={Variant.Warn} title="Discard">
 				<Trash className="w-[16px] h-full" />
 			</Button>
-			<Button variant={Variant.Primary} title="Add Source" disabled>
+			<Button onClick={handleSubmit} variant={Variant.Primary} title="Add Source" disabled={!valid}>
 				<FolderSolid className="w-[16px] -mt-[1px]" />
 			</Button>
 		</div>

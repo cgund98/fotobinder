@@ -28,7 +28,7 @@
 				{placeholder}
 				readonly
 				{value}
-				class="placeholder:text-gray-500 bg-transparent caret-gray-100 appearance-none w-full accent-transparent focus:outline-none text-base"
+				class="placeholder:text-gray-500 cursor-pointer bg-transparent caret-gray-100 appearance-none w-full accent-transparent focus:outline-none text-base"
 			/>
 			<div><FolderSolid className="text-gray-500 w-[20px]" /></div>
 		</div>

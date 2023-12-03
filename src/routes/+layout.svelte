@@ -1,7 +1,8 @@
 <script>
 	import '../app.css';
+	import AlertsWrapper from '$lib/components/alert/AlertsWrapper.svelte';
 
-	import Navbar from '../lib/components/nav/navbar/Navbar.svelte';
+	import Navbar from '$lib/components/nav/navbar/Navbar.svelte';
 </script>
 
 <div class="bg-bg-gray min-h-screen flex text-gray-100">
@@ -12,3 +13,5 @@
 		<slot />
 	</div>
 </div>
+
+<AlertsWrapper />

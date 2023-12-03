@@ -8,16 +8,30 @@ pub enum FileType {
     Directory,
 }
 
-#[derive(Display, EnumString, Serialize)]
+#[derive(Debug, Display, EnumString, Serialize, PartialEq)]
 pub enum ImageType {
+    #[strum(serialize = "")]
+    None,
+
+    #[strum(serialize = "jpg", serialize = "jpeg")]
     Jpeg,
+
+    #[strum(serialize = "png")]
     Png,
+}
+
+pub fn parse_image_type(s: String) -> ImageType {
+    match ImageType::from_str(&s) {
+        Ok(i) => i,
+        Err(_e) => ImageType::None,
+    }
 }
 
 #[derive(Serialize)]
 pub struct FsEntry {
-    pub path: String,
-    pub source: String,
+    pub name: String,
+    pub subpath: String,
+    pub source_id: String,
     pub fs_type: FileType,
     pub hidden: bool,
     pub sha256: String,
@@ -33,8 +47,9 @@ pub struct AdditionalField {
 }
 
 pub struct DbFsEntry {
-    pub path: String,
-    pub source: String,
+    pub name: String,
+    pub subpath: String,
+    pub source_id: String,
     pub fs_type: String,
     pub hidden: bool,
     pub sha256: String,
@@ -49,8 +64,9 @@ impl From<FsEntry> for DbFsEntry {
         let additional_fields = serde_json::to_string(&e.additional_fields).unwrap();
 
         Self {
-            path: e.path,
-            source: e.source,
+            name: e.name,
+            subpath: e.subpath,
+            source_id: e.source_id,
             fs_type: e.fs_type.to_string(),
             hidden: e.hidden,
             sha256: e.sha256,
@@ -67,8 +83,9 @@ impl From<DbFsEntry> for FsEntry {
             serde_json::from_str(&e.additional_fields).unwrap();
 
         Self {
-            path: e.path,
-            source: e.source,
+            name: e.name,
+            subpath: e.subpath,
+            source_id: e.source_id,
             fs_type: FileType::from_str(&e.fs_type).unwrap(),
             hidden: e.hidden,
             sha256: e.sha256,

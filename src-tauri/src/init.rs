@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use r2d2_sqlite::SqliteConnectionManager;
 use tauri::{Manager, State};
 
@@ -17,7 +19,7 @@ pub fn init_deps(app: &mut tauri::App) -> InitResult {
     Ok(())
 }
 
-fn init_db(app: &mut tauri::App) -> Result<PoolType, Box<dyn std::error::Error + 'static>> {
+fn init_db(app: &mut tauri::App) -> Result<Arc<PoolType>, Box<dyn std::error::Error + 'static>> {
     let handle = app.handle();
 
     // Read application state
@@ -32,15 +34,19 @@ fn init_db(app: &mut tauri::App) -> Result<PoolType, Box<dyn std::error::Error +
 
     crate::data::init::init_db(&pool)?;
 
-    Ok(pool)
+    Ok(Arc::new(pool))
 }
 
-fn init_controllers(app: &mut tauri::App, pool: PoolType) -> InitResult {
+fn init_controllers(app: &mut tauri::App, pool: Arc<PoolType>) -> InitResult {
     let state: State<crate::state::AppState> = app.state();
 
-    let source_repo = data::source::repo::new(pool);
-    let source_controller = biz::source::new_controller(source_repo);
+    let source_repo = data::source::repo::Repo::new(Arc::clone(&pool));
+    let source_controller = biz::source::Controller::new(source_repo);
     *state.source_controller.lock().unwrap() = Some(source_controller);
+
+    let fs_entry_repo = data::fs_entry::repo::Repo::new(Arc::clone(&pool));
+    let fs_entry_controller = biz::fs_entry::Controller::new(fs_entry_repo);
+    *state.fs_entry_controller.lock().unwrap() = Some(fs_entry_controller);
 
     Ok(())
 }

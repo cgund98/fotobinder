@@ -4,9 +4,10 @@
 	export let className: string = '';
 	export let label: string = '';
 	export let placeholder: string = '';
-	export let open: boolean = false;
 	export let options: { label: string; value: string }[];
 	export let value: string;
+
+	let open = false;
 
 	// Parse label from current set of options
 	const curLabel = options.filter((o) => o.value === value)[0]?.label;
@@ -19,7 +20,10 @@
 		</h3>
 	{/if}
 	<div class="relative">
-		<div role="button" class="flex flex-row text-gray-100 bg-gray-700 px-3 py-2 rounded-lg">
+		<button
+			on:click={() => (open = !open)}
+			class="w-full text-left flex flex-row text-gray-100 bg-gray-700 px-3 py-2 rounded-lg"
+		>
 			<p
 				class="placeholder:text-gray-500 bg-transparent caret-gray-100 appearance-none w-full accent-transparent focus:outline-none text-base"
 			>
@@ -28,7 +32,7 @@
 			<div class="flex flex-col justify-around">
 				<ChevronDown className="text-gray-500 w-[20px]" />
 			</div>
-		</div>
+		</button>
 
 		{#if open}
 			<div
@@ -36,7 +40,16 @@
 			>
 				<ul class="">
 					{#each options as option}
-						<li class="block py-2 px-4 text-base text-gray-300 hover:bg-gray-600 cursor-pointer">
+						<li
+							role="option"
+							aria-selected={value == option.value}
+							class="block py-2 px-4 text-base text-gray-300 hover:bg-gray-600 cursor-pointer"
+							on:click|preventDefault={() => {
+								value = option.value;
+								open = false;
+							}}
+							on:keydown|preventDefault={() => {}}
+						>
 							{option.label}
 						</li>
 					{/each}

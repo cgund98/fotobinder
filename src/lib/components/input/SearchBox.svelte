@@ -1,10 +1,12 @@
 <script lang="ts">
+	import type { FormEventHandler } from 'svelte/elements';
 	import Search from '../icons/Search.svelte';
 
 	export let className: string = '';
 	export let label: string = '';
 	export let placeholder: string = 'Placeholder';
 	export let open: boolean = false;
+	export let value: string = '';
 
 	const items = [
 		{ label: 'Item' },
@@ -13,6 +15,11 @@
 		{ label: 'Item' },
 		{ label: 'Item' }
 	];
+
+	const handler: FormEventHandler<HTMLInputElement> = (e) => {
+		let t = e.target as HTMLInputElement;
+		value = t.value;
+	};
 </script>
 
 <div class="flex flex-col py-1 px-1 {className}">
@@ -25,6 +32,8 @@
 		<div class="flex flex-row text-gray-100 bg-gray-700 px-3 py-2 rounded-lg">
 			<input
 				{placeholder}
+				{value}
+				on:input={handler}
 				class="placeholder:text-gray-500 bg-transparent caret-gray-100 appearance-none w-full accent-transparent focus:outline-none text-base"
 			/>
 			<div><Search className="text-gray-500 w-[20px]" /></div>

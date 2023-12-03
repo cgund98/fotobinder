@@ -30,17 +30,10 @@ repos:
       - id: cargo-fmt
         name: cargo fmt
         description: Format files with rustfmt.
-        entry: bash -c 'cd src-tauri && cargo fmt -- --check'
+        entry: bash -c 'cd src-tauri && cargo fmt --all'
         language: system
         files: \.rs$
         args: []
-      # - id: cargo-deny
-      #   name: cargo deny check
-      #   description: Check cargo dependencies
-      #   entry: bash -c 'cd src-tauri && cargo deny check'
-      #   language: system
-      #   files: \.rs$
-      #   args: []
       - id: cargo-check
         name: cargo check
         description: Check the package for errors.

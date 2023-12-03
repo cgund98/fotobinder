@@ -32,7 +32,6 @@
 		// Wait to see if user holds mouse before showing the tooltip
 		if (!show)
 			setTimeout(() => {
-				console.log(horCSS);
 				show = isHovered;
 			}, delay);
 	};
@@ -62,7 +61,7 @@
 {#if show}
 	<div
 		style="{vertCSS}; {horCSS}"
-		class="fixed box-shadow rounded-md px-2 py-1 text-sm bg-teal-900 z-50"
+		class="fixed box-shadow rounded-md px-2 py-1 text-sm bg-teal-900 z-50 text-gray-100"
 	>
 		{title}
 	</div>

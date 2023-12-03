@@ -12,7 +12,7 @@
 
 	export let className: string = '';
 	export let title: string;
-	export let variant: Variant;
+	export let variant: Variant = Variant.Primary;
 	export let disabled = false;
 	export let shadow = true;
 

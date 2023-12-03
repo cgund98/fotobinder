@@ -1,15 +1,21 @@
 <script lang="ts">
-	import PathHeader from '../../../lib/components/library/header/PathHeader.svelte';
-	import FolderCard from '../../../lib/components/library/folder/FolderCard.svelte';
-	import Separator from '../../../lib/components/decoration/Separator.svelte';
-	import ImageCard from '../../../lib/components/library/image/ImageCard.svelte';
-	import EditTagsModal from '../../../lib/components/tags/EditTagsModal.svelte';
-	import NewTagModal from '../../../lib/components/tags/NewTagModal.svelte';
-	import Button, { Variant } from '../../../lib/components/button/Button.svelte';
-	import Tag from '../../../lib/components/icons/Tag.svelte';
-	import ChevronDown from '../../../lib/components/icons/ChevronDown.svelte';
-	import ImageDetailsCard from '../../../lib/components/library/image/ImageDetailsCard.svelte';
-	import AddToCollectionModal from '../../../lib/components/collections/AddToCollectionModal.svelte';
+	import PathHeader from '$lib/components/library/header/PathHeader.svelte';
+	import FolderCard from '$lib/components/library/folder/FolderCard.svelte';
+	import Separator from '$lib/components/decoration/Separator.svelte';
+	import ImageCard from '$lib/components/library/image/ImageCard.svelte';
+	import EditTagsModal from '$lib/components/tags/EditTagsModal.svelte';
+	import NewTagModal from '$lib/components/tags/NewTagModal.svelte';
+	import Button, { Variant } from '$lib/components/button/Button.svelte';
+	import Tag from '$lib/components/icons/Tag.svelte';
+	import ChevronDown from '$lib/components/icons/ChevronDown.svelte';
+	import ImageDetailsCard from '$lib/components/library/image/ImageDetailsCard.svelte';
+	import AddToCollectionModal from '$lib/components/collections/AddToCollectionModal.svelte';
+
+	import type { PageData } from './$types';
+	import { scan } from '$lib/api/source';
+	import { catchBad } from '$lib/store/alerts';
+
+	export let data: PageData;
 
 	const folders = [
 		{ name: 'Folder' },
@@ -38,7 +44,16 @@
 	let showAddToCollection = false;
 </script>
 
-<PathHeader path={['Local Files', 'Downloads', 'Mountains', 'Peaks']} />
+<PathHeader path={['My Library', data.sourceId]} />
+
+<Button
+	title="Scan"
+	onClick={() => {
+		scan(data.sourceId)
+			.then(() => console.log('scanned'))
+			.catch(catchBad);
+	}}
+/>
 
 <div class="flex justify-between py-1 px-2 mt-2">
 	<div class="flex flex-col justify-end">
@@ -48,7 +63,6 @@
 	<div class="flex flex-row space-x-3">
 		<Button
 			title="Modify Tags"
-			variant={Variant.Primary}
 			className="disabled:bg-teal-700"
 			onClick={() => {
 				showEditTags = true;

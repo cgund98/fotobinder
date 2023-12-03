@@ -1,19 +1,17 @@
 <script lang="ts">
-	import Button, { Variant } from '../../lib/components/button/Button.svelte';
-	import IconButton, {
-		Variant as IconVariant
-	} from '../../lib/components/button/IconButton.svelte';
-	import Separator from '../../lib/components/decoration/Separator.svelte';
-	import Adjustments from '../../lib/components/icons/Adjustments.svelte';
-	import Trash from '../../lib/components/icons/Trash.svelte';
-	import Plus from '../../lib/components/icons/Plus.svelte';
-	import Tag from '../../lib/components/icons/Tag.svelte';
-	import Dropdown from '../../lib/components/input/Dropdown.svelte';
-	import SearchBox from '../../lib/components/input/SearchBox.svelte';
-	import PathHeader from '../../lib/components/library/header/PathHeader.svelte';
-	import Search from '../../lib/components/icons/Search.svelte';
-	import Checkbox from '../../lib/components/input/Checkbox.svelte';
-	import Reset from '../../lib/components/icons/Reset.svelte';
+	import Button, { Variant } from '$lib/components/button/Button.svelte';
+	import IconButton, { Variant as IconVariant } from '$lib/components/button/IconButton.svelte';
+	import Separator from '$lib/components/decoration/Separator.svelte';
+	import Adjustments from '$lib/components/icons/Adjustments.svelte';
+	import Trash from '$lib/components/icons/Trash.svelte';
+	import Plus from '$lib/components/icons/Plus.svelte';
+	import Tag from '$lib/components/icons/Tag.svelte';
+	import Dropdown from '$lib/components/input/Dropdown.svelte';
+	import SearchBox from '$lib/components/input/SearchBox.svelte';
+	import PathHeader from '$lib/components/library/header/PathHeader.svelte';
+	import Search from '$lib/components/icons/Search.svelte';
+	import Checkbox from '$lib/components/input/Checkbox.svelte';
+	import Reset from '$lib/components/icons/Reset.svelte';
 
 	const rules = [
 		{ ruleType: 'include', tag: 'Season / Winter' },

@@ -10,6 +10,9 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             cmd::source::create_source,
             cmd::source::get_source,
+            cmd::source::delete_source,
+            cmd::source::list_sources,
+            cmd::fs_entry::scan_source_dir,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

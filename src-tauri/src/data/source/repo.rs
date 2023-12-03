@@ -1,18 +1,17 @@
+use std::sync::Arc;
+
 use super::entity;
 
 pub struct Repo {
-    pool: crate::state::PoolType,
-}
-
-pub fn new(pool: crate::state::PoolType) -> Repo {
-    Repo { pool }
+    pool: Arc<crate::state::PoolType>,
 }
 
 impl Repo {
-    pub fn save(
-        &self,
-        source: entity::Source,
-    ) -> anyhow::Result<entity::Source, crate::errors::AppError> {
+    pub fn new(pool: Arc<crate::state::PoolType>) -> Repo {
+        Repo { pool }
+    }
+
+    pub fn save(&self, source: entity::Source) -> Result<entity::Source, crate::errors::AppError> {
         let d_source = entity::DbSource::from(source);
 
         self.pool.get().unwrap().execute(
@@ -37,7 +36,7 @@ impl Repo {
         Ok(new_source)
     }
 
-    pub fn get_by_id(&self, id: &str) -> anyhow::Result<entity::Source, crate::errors::AppError> {
+    pub fn get_by_id(&self, id: &str) -> Result<entity::Source, crate::errors::AppError> {
         let pool = self.pool.get().unwrap();
         let mut stmt = pool
             .prepare("SELECT id, source_type, name, path, synced_at FROM sources WHERE id = ?1")?;
@@ -57,5 +56,67 @@ impl Repo {
             Some(ent) => Ok(entity::Source::from(ent.unwrap())),
             None => Err(crate::errors::AppError::NotFound(format!("id = '{}'", id))),
         }
+    }
+
+    pub fn get_by_path(&self, path: &str) -> Result<entity::Source, crate::errors::AppError> {
+        let pool = self.pool.get().unwrap();
+        let mut stmt = pool.prepare(
+            "SELECT id, source_type, name, path, synced_at FROM sources WHERE path = ?1",
+        )?;
+
+        // Map results
+        let ent_iter = stmt.query_map([&path], |row| {
+            Ok(entity::DbSource {
+                id: row.get(0)?,
+                source_type: row.get(1)?,
+                name: row.get(2)?,
+                path: row.get(3)?,
+                synced_at: row.get(4)?,
+            })
+        })?;
+
+        match ent_iter.last() {
+            Some(ent) => Ok(entity::Source::from(ent.unwrap())),
+            None => Err(crate::errors::AppError::NotFound(format!(
+                "path = '{}'",
+                path
+            ))),
+        }
+    }
+
+    pub fn list(&self) -> Result<Vec<entity::Source>, crate::errors::AppError> {
+        let pool = self.pool.get().unwrap();
+        let mut stmt =
+            pool.prepare("SELECT id, source_type, name, path, synced_at FROM sources")?;
+
+        // Map results
+        let ent_iter = stmt.query_map([], |row| {
+            Ok(entity::DbSource {
+                id: row.get(0)?,
+                source_type: row.get(1)?,
+                name: row.get(2)?,
+                path: row.get(3)?,
+                synced_at: row.get(4)?,
+            })
+        })?;
+
+        let mut sources: Vec<entity::Source> = Vec::new();
+
+        for db_source in ent_iter {
+            let source = entity::Source::from(db_source.unwrap());
+
+            sources.push(source);
+        }
+
+        Ok(sources)
+    }
+
+    pub fn delete(&self, id: &str) -> Result<(), crate::errors::AppError> {
+        self.pool
+            .get()
+            .unwrap()
+            .execute("DELETE FROM sources WHERE id = ?1", [id])?;
+
+        Ok(())
     }
 }

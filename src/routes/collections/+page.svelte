@@ -1,10 +1,10 @@
 <script lang="ts">
-	import Button, { Variant } from '../../lib/components/button/Button.svelte';
-	import NewCollectionModal from '../../lib/components/collections/NewCollectionModal.svelte';
-	import Separator from '../../lib/components/decoration/Separator.svelte';
-	import ChevronDown from '../../lib/components/icons/ChevronDown.svelte';
-	import FolderCard from '../../lib/components/library/folder/FolderCard.svelte';
-	import PathHeader from '../../lib/components/library/header/PathHeader.svelte';
+	import Button, { Variant } from '$lib/components/button/Button.svelte';
+	import NewCollectionModal from '$lib/components/collections/NewCollectionModal.svelte';
+	import Separator from '$lib/components/decoration/Separator.svelte';
+	import ChevronDown from '$lib/components/icons/ChevronDown.svelte';
+	import FolderCard from '$lib/components/library/folder/FolderCard.svelte';
+	import PathHeader from '$lib/components/library/header/PathHeader.svelte';
 
 	const folders = [
 		{ name: 'Collection' },

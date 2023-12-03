@@ -1,62 +1,131 @@
 <script lang="ts">
-	import { invoke } from '@tauri-apps/api/tauri';
-	import Button, { Variant } from '../../lib/components/button/Button.svelte';
-	import Separator from '../../lib/components/decoration/Separator.svelte';
-	import ChevronDown from '../../lib/components/icons/ChevronDown.svelte';
-	import FolderCard from '../../lib/components/library/folder/FolderCard.svelte';
-	import PathHeader from '../../lib/components/library/header/PathHeader.svelte';
-	import NewSourceModal from '../../lib/components/library/source/NewSourceModal.svelte';
+	import { routeToPage } from '$lib/nav/route';
+
+	import { list } from '$lib/api/source';
+	import { writable } from 'svelte/store';
+	import Separator from '$lib/components/decoration/Separator.svelte';
+	import FolderCard from '$lib/components/library/folder/FolderCard.svelte';
+	import PathHeader from '$lib/components/library/header/PathHeader.svelte';
+	import NewSourceModal from '$lib/components/library/source/NewSourceModal.svelte';
+	import { type Sources, remove } from '$lib/api/source';
+	import { catchBad, good } from '$lib/store/alerts';
+	import Menu from '$lib/components/menu/Menu.svelte';
+	import Trash from '$lib/components/icons/Trash.svelte';
+	import ConfirmModal from '$lib/components/layout/ConfirmModal.svelte';
 
 	let showNewSource = false;
 
-	const folders = [{ name: 'Folder' }, { name: 'Folder5' }, { name: 'Folder6' }];
+	/* Fetch sources */
+	let sources: Sources = { sources: [] };
+	type SelectedMap = { [index: string]: boolean };
+	let selected = writable<SelectedMap>({});
+
+	const updateSources = () => {
+		list()
+			.then((res) => {
+				// Update sources
+				sources = res;
+
+				// Update selection
+				const newIds = new Set(sources.sources.map((s) => s.id));
+				const overlap = new Set(Object.keys($selected).filter((k) => newIds.has(k)));
+
+				let newSelected = $selected;
+				newSelected = Object.keys(newSelected).reduce((prev, cur) => {
+					if (newIds.has(cur)) prev[cur] = false;
+					else if (overlap.has(cur)) prev[cur] = newSelected[cur];
+					return prev;
+				}, {} as SelectedMap);
+
+				selected.set(newSelected);
+			})
+			.catch(catchBad);
+	};
+
+	updateSources();
+
+	/* Menu Options */
+	$: selectedSources = Object.keys($selected).filter((key) => $selected[key]);
+
+	const deleteSources = () => {
+		const promises = selectedSources.map(remove);
+
+		Promise.all(promises)
+			.then(() => {
+				good(`Successfully deleted ${promises.length} sources.`);
+				updateSources();
+			})
+			.catch(catchBad);
+	};
+
+	$: menuOptions = [
+		{
+			label: 'Delete',
+			icon: Trash,
+			action: () => (showConfirmDelete = true),
+			disabled: selectedSources.length == 0
+		}
+	];
+
+	// Confirm
+	let showConfirmDelete = false;
 </script>
 
 <PathHeader path={['My Library']} />
 
 <div class="flex justify-between py-1 px-2 mt-2">
 	<div class="flex flex-col justify-end">
-		<p class="text-gray-500 text-base">Select or add an image source.</p>
+		<p class="text-gray-500 text-base">
+			Select or add an image source. Double-click to view a source's contents.
+		</p>
 	</div>
 
 	<div class="flex flex-row space-x-3">
-		<Button
-			title="Actions"
-			variant={Variant.Secondary}
-			onClick={() => {
-				showNewSource = true;
-			}}
-		>
-			<ChevronDown className="w-[16px] mt-[1px]" />
-		</Button>
+		<Menu label="Actions" options={menuOptions} position="right" />
 	</div>
 </div>
 
 <Separator className="my-2" />
 
 <div class="w-full flex flex-wrap">
-	<div class="w-1/2 sm:w-1/3 md:w-1/4 xl:w-1/5 2xl:w-1/6 p-2">
-		<FolderCard name="Add Source" add />
-	</div>
-	{#each folders as folder}
+	{#each sources.sources as source}
 		<div class="w-1/2 sm:w-1/3 md:w-1/4 xl:w-1/5 2xl:w-1/6 p-2">
-			<FolderCard name={folder.name} />
+			<FolderCard
+				active={$selected[source.id]}
+				onClick={() => {
+					selected.update((a) => {
+						a[source.id] = !a[source.id];
+						return a;
+					});
+				}}
+				onDoubleClick={() => routeToPage(`library/${source.id}`)}
+				name={source.name}
+			/>
 		</div>
 	{/each}
-</div>
 
-<a href="/library/local">Local</a>
+	<div class="w-1/2 sm:w-1/3 md:w-1/4 xl:w-1/5 2xl:w-1/6 p-2">
+		<FolderCard onClick={() => (showNewSource = true)} name="Add Source" add />
+	</div>
+</div>
 
 {#if showNewSource}
 	<NewSourceModal
-		onClose={async () => {
-			try {
-				console.log('creating source...');
-				console.log(await invoke('create_source', { name: 'name' }));
-			} catch (err) {
-				console.log('error:', err);
-			}
+		onClose={() => {
 			showNewSource = false;
+			updateSources();
+		}}
+	/>
+{/if}
+
+{#if showConfirmDelete}
+	<ConfirmModal
+		title="Delete Sources"
+		message={`Are you sure you want to delete ${selectedSources.length} source(s)?`}
+		onClose={() => (showConfirmDelete = false)}
+		onConfirm={() => {
+			deleteSources();
+			showConfirmDelete = false;
 		}}
 	/>
 {/if}

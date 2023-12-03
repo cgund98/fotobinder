@@ -1,9 +1,12 @@
+use std::path::StripPrefixError;
+
 use serde::Serialize;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
+
 pub enum AppError {
-    #[error("400 <|> Bad Request. Reason: {0}")]
+    #[error("400 <|> Bad Request. Reason: '{0}'")]
     BadRequest(String),
 
     #[error("404 <|> Resource not found with {0}")]
@@ -14,10 +17,12 @@ pub enum AppError {
 
     #[error("500 <|> Unexpected sql error: {0}")]
     SQL(#[from] rusqlite::Error),
-}
 
-pub trait CmdOutput {
-    fn to_cmd_output(&self) -> String;
+    #[error("500 <|> String prefix strip error: {0}")]
+    StripPrefix(#[from] StripPrefixError),
+
+    #[error("500 <|> Unable to read file: {0}")]
+    FileIoError(#[from] std::io::Error),
 }
 
 #[derive(Serialize)]
