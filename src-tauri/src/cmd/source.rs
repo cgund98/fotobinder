@@ -33,7 +33,7 @@ pub fn get_source(id: &str, handle: tauri::AppHandle) -> Result<Source, AppError
         .map(Source::from)
 }
 
-#[tauri::command]
+#[tauri::command(async)]
 pub fn list_sources(handle: tauri::AppHandle) -> Result<Sources, AppError> {
     handle.source_ctrl(|ctrl| ctrl.list()).map(Sources::from)
 }

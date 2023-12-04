@@ -28,6 +28,7 @@ export interface FsEntry {
 	hidden: boolean;
 	image_type: ImageType;
 	thumbnail_path: string;
+	thumbnail_generating: boolean;
 	additional_fields: AdditionalField[];
 }
 
@@ -42,4 +43,10 @@ export const list_by_source_id = async (sourceId: string, pathPrefix: string) =>
 	})) as FsEntries;
 
 	return entries;
+};
+
+export const generate_missing_thumbnails = async (sourceId: string) => {
+	return (await invoke('generate_missing_thumbnails', {
+		sourceId
+	})) as number;
 };

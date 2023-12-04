@@ -15,6 +15,12 @@ export interface Sources {
 	sources: Source[];
 }
 
+export interface ScanResults {
+	entries_deleted: number;
+	entries_created: number;
+	thumbnails_created: number;
+}
+
 export const create = async (name: string, type: string, path: string): Promise<Source> => {
 	const source = (await invoke('create_source', { name, sourceType: type, path })) as Source;
 
@@ -39,6 +45,6 @@ export const remove = async (id: string): Promise<Source> => {
 	return source;
 };
 
-export const scan = async (id: string): Promise<undefined> => {
-	await invoke('scan_source_dir', { sourceId: id });
+export const scan = async (id: string): Promise<ScanResults> => {
+	return (await invoke('scan_source_dir', { sourceId: id })) as ScanResults;
 };

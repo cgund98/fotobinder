@@ -2,13 +2,13 @@ use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 use strum_macros::{Display, EnumString};
 
-#[derive(Display, EnumString, Serialize, PartialEq)]
+#[derive(Display, EnumString, Serialize, PartialEq, Clone)]
 pub enum FileType {
     File,
     Directory,
 }
 
-#[derive(Debug, Display, EnumString, Serialize, PartialEq)]
+#[derive(Debug, Display, EnumString, Serialize, PartialEq, Clone)]
 pub enum ImageType {
     #[strum(serialize = "")]
     None,
@@ -33,7 +33,10 @@ pub fn parse_image_type(s: String) -> ImageType {
     }
 }
 
-#[derive(Serialize)]
+#[derive(Hash, PartialEq, Eq)]
+pub struct FsEntryIds(pub String, pub String, pub String);
+
+#[derive(Serialize, Clone)]
 pub struct FsEntry {
     pub name: String,
     pub subpath: String,
@@ -43,10 +46,11 @@ pub struct FsEntry {
     pub sha256: String,
     pub image_type: ImageType,
     pub thumbnail_path: String,
+    pub thumbnail_generating: bool,
     pub additional_fields: Vec<AdditionalField>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct AdditionalField {
     pub label: String,
     pub value: String,
@@ -61,6 +65,7 @@ pub struct DbFsEntry {
     pub sha256: String,
     pub image_type: String,
     pub thumbnail_path: String,
+    pub thumbnail_generating: bool,
     pub additional_fields: String,
 }
 
@@ -78,6 +83,7 @@ impl From<FsEntry> for DbFsEntry {
             sha256: e.sha256,
             image_type: e.image_type.to_string(),
             thumbnail_path: e.thumbnail_path,
+            thumbnail_generating: e.thumbnail_generating,
             additional_fields,
         }
     }
@@ -97,6 +103,7 @@ impl From<DbFsEntry> for FsEntry {
             sha256: e.sha256,
             image_type: ImageType::from_str(&e.image_type).unwrap(),
             thumbnail_path: e.thumbnail_path,
+            thumbnail_generating: e.thumbnail_generating,
             additional_fields,
         }
     }

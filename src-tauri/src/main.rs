@@ -3,7 +3,8 @@
 
 use fotobinder::cmd;
 
-fn main() {
+#[tokio::main]
+async fn main() {
     tauri::Builder::default()
         .manage(fotobinder::state::AppState::default())
         .setup(fotobinder::init::init_deps)
@@ -14,6 +15,7 @@ fn main() {
             cmd::source::list_sources,
             cmd::fs_entry::scan_source_dir,
             cmd::fs_entry::list_fs_entries_by_source_id,
+            cmd::fs_entry::generate_missing_thumbnails,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

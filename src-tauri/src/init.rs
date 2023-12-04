@@ -3,7 +3,7 @@ use std::sync::Arc;
 use r2d2_sqlite::SqliteConnectionManager;
 use tauri::{Manager, State};
 
-use crate::{biz, data, state::PoolType};
+use crate::{biz, data, fs::queue, state::PoolType};
 
 // Type aliases
 type InitResult = Result<(), Box<dyn std::error::Error + 'static>>;
@@ -22,9 +22,8 @@ pub fn init_deps(app: &mut tauri::App) -> InitResult {
 fn init_db(app: &mut tauri::App) -> Result<Arc<PoolType>, Box<dyn std::error::Error + 'static>> {
     let handle = app.handle();
 
-    // Read application state
+    // Find app path
     let binding = handle.path_resolver().app_data_dir().unwrap();
-
     let data_path = binding.as_path();
     let db_file = data_path.join("main.db");
 
@@ -38,15 +37,34 @@ fn init_db(app: &mut tauri::App) -> Result<Arc<PoolType>, Box<dyn std::error::Er
 }
 
 fn init_controllers(app: &mut tauri::App, pool: Arc<PoolType>) -> InitResult {
+    // Initialize thumbnail queue
+    let th_queue = queue::init_queue();
+
+    // Read app state
     let state: State<crate::state::AppState> = app.state();
 
+    // Find thumbnails path
+    let binding = app.app_handle().path_resolver().app_data_dir().unwrap();
+    let thumbnail_buf = binding.join("thumbnails");
+    let thumbnails_path = thumbnail_buf.as_path();
+    let thumbnails_path_str = String::from(thumbnails_path.to_string_lossy());
+    std::fs::create_dir_all(thumbnails_path)?;
+
+    // Init source controller
     let source_repo = data::source::repo::Repo::new(Arc::clone(&pool));
     let source_controller = biz::source::Controller::new(source_repo);
     *state.source_controller.lock().unwrap() = Some(source_controller);
 
-    let fs_entry_repo = data::fs_entry::repo::Repo::new(Arc::clone(&pool));
-    let fs_entry_controller = biz::fs_entry::Controller::new(fs_entry_repo);
+    // Init fs_entry controller
+    let ctrl_th_queue = th_queue.clone();
+    let fs_entry_repo = Arc::new(data::fs_entry::repo::Repo::new(Arc::clone(&pool)));
+    let fs_entry_controller =
+        biz::fs_entry::Controller::new(fs_entry_repo.clone(), ctrl_th_queue, thumbnails_path_str);
     *state.fs_entry_controller.lock().unwrap() = Some(fs_entry_controller);
+
+    // Initialize thumbnail process
+    let proc_th_queue = th_queue.clone();
+    tokio::spawn(async move { queue::queue_proc(proc_th_queue, fs_entry_repo).await });
 
     Ok(())
 }

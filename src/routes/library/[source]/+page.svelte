@@ -14,6 +14,7 @@
 	import NewTagModal from '$lib/components/tags/NewTagModal.svelte';
 	import Button from '$lib/components/button/Button.svelte';
 	import Tag from '$lib/components/icons/Tag.svelte';
+	import Photo from '$lib/components/icons/Photo.svelte';
 	import ImageDetailsCard from '$lib/components/library/image/ImageDetailsCard.svelte';
 	import AddToCollectionModal from '$lib/components/collections/AddToCollectionModal.svelte';
 	import type { HeaderEntry } from '$lib/components/library/header/PageHeader';
@@ -21,7 +22,7 @@
 	import type { PageData } from './$types';
 	import { catchBad, good } from '$lib/store/alerts';
 	import { scan, get as getSource, type Source } from '$lib/api/source';
-	import { FileType, list_by_source_id } from '$lib/api/fs_entry';
+	import { FileType, generate_missing_thumbnails, list_by_source_id } from '$lib/api/fs_entry';
 	import Menu from '$lib/components/menu/Menu.svelte';
 	import FolderSolid from '$lib/components/icons/FolderSolid.svelte';
 	import Reset from '$lib/components/icons/Reset.svelte';
@@ -116,11 +117,30 @@
 			icon: Reset,
 			action: () =>
 				scan(data.sourceId)
-					.then(() => {
-						good('Successfully scanned for new files.');
+					.then((res) => {
+						let msg = `Found ${res.entries_created} new entries and \
+							deleted ${res.entries_deleted} outdated entries.`;
+
+						if (res.thumbnails_created)
+							msg += ` Generating ${res.thumbnails_created} \
+							thumbnails in the background...`;
+						good(msg);
 						fetchEntries(subpath);
 					})
 					.catch(catchBad),
+			disabled: false
+		},
+		{
+			label: 'Fix Thumbnails',
+			icon: Photo,
+			action: () => {
+				generate_missing_thumbnails(data.sourceId)
+					.then((res) => {
+						if (res > 0) good(`Generating ${res} missing thumbnails in background...`);
+						else good(`Found no missing thumbnails!`);
+					})
+					.catch(catchBad);
+			},
 			disabled: false
 		}
 	];

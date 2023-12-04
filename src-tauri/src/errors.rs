@@ -26,6 +26,15 @@ pub enum AppError {
 
     #[error("500 <|> Image decoding error: {0}")]
     ImageError(#[from] image::ImageError),
+
+    #[error("500 <|> Image resize buffer error: {0}")]
+    ImageBufferError(#[from] fast_image_resize::ImageBufferError),
+
+    #[error("500 <|> Image resize alpha muldiv error: {0}")]
+    MulDivImageError(#[from] fast_image_resize::MulDivImageError),
+
+    #[error("500 <|> Unable to parse exif fields: {0}")]
+    ExifParseError(#[from] exif::Error),
 }
 
 #[derive(Serialize)]
