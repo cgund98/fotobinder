@@ -71,7 +71,7 @@
 	let showConfirmDelete = false;
 </script>
 
-<PathHeader path={['My Library']} />
+<PathHeader path={[{ label: 'My Library', route: '/library' }]} />
 
 <div class="flex justify-between py-1 px-2 mt-2">
 	<div class="flex flex-col justify-end">
@@ -98,7 +98,7 @@
 						return a;
 					});
 				}}
-				onDoubleClick={() => routeToPage(`library/${source.id}`)}
+				onDoubleClick={() => routeToPage(`/library/${source.id}`, { subpath: '' })}
 				name={source.name}
 			/>
 		</div>

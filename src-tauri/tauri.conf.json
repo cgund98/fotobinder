@@ -11,6 +11,9 @@
 	},
 	"tauri": {
 		"allowlist": {
+			"path": {
+				"all": true
+			},
 			"all": false,
 			"shell": {
 				"all": false,
@@ -23,6 +26,16 @@
 				"message": true,
 				"open": true,
 				"save": true
+			},
+			"fs": {
+				"readFile": true,
+				"readDir": true,
+				"scope": ["$APPDATA/thumbnails/*"]
+			},
+			"protocol": {
+				"asset": true,
+				"all": false,
+				"assetScope": ["$APPDATA/thumbnails/*"]
 			}
 		},
 		"bundle": {

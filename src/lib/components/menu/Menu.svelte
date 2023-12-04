@@ -21,7 +21,7 @@
 	if (position == 'right') positionCSS = 'right-0';
 
 	const iconProps = {
-		className: ''
+		className: '!w-5 !h-5'
 	};
 </script>
 
@@ -37,7 +37,7 @@
 			>
 				{#each options as option}
 					<button
-						class="w-36 truncate space-x-2 flex flex-row py-2 px-3 text-base text-gray-300 cursor-pointer {option.disabled
+						class="w-48 truncate border-none space-x-2 flex flex-row py-2 px-3 font-medium text-base text-gray-300 cursor-pointer {option.disabled
 							? '!text-gray-500'
 							: 'hover:text-teal-400'}"
 						on:click={() => {

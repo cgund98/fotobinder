@@ -23,6 +23,9 @@ pub enum AppError {
 
     #[error("500 <|> Unable to read file: {0}")]
     FileIoError(#[from] std::io::Error),
+
+    #[error("500 <|> Image decoding error: {0}")]
+    ImageError(#[from] image::ImageError),
 }
 
 #[derive(Serialize)]

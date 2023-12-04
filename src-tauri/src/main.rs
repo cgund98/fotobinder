@@ -13,6 +13,7 @@ fn main() {
             cmd::source::delete_source,
             cmd::source::list_sources,
             cmd::fs_entry::scan_source_dir,
+            cmd::fs_entry::list_fs_entries_by_source_id,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

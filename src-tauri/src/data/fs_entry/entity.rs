@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 use strum_macros::{Display, EnumString};
 
-#[derive(Display, EnumString, Serialize)]
+#[derive(Display, EnumString, Serialize, PartialEq)]
 pub enum FileType {
     File,
     Directory,
@@ -18,6 +18,12 @@ pub enum ImageType {
 
     #[strum(serialize = "png")]
     Png,
+
+    #[strum(serialize = "bmp")]
+    Bmp,
+
+    #[strum(serialize = "tga")]
+    Tga,
 }
 
 pub fn parse_image_type(s: String) -> ImageType {

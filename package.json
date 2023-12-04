@@ -12,6 +12,8 @@
 	},
 	"dependencies": {
 		"@tauri-apps/api": "^1.5.1",
+		"@types/path-browserify": "^1.0.2",
+		"path-browserify": "^1.0.1",
 		"sad": "^1.8.1",
 		"uuid": "^9.0.1"
 	},

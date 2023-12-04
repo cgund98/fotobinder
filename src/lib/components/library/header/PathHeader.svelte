@@ -1,11 +1,14 @@
 <script lang="ts">
 	import Ellipsis from '../../icons/Ellipsis.svelte';
 	import ChevronDown from '../../icons/ChevronDown.svelte';
+	import type { HeaderEntry } from './PageHeader';
+	import { routeToPage } from '$lib/nav/route';
 
 	// Parse path
 	const MAX_ELEMENTS = 3;
-	export let path: string[];
-	const active_path = path.slice(Math.max(0, path.length - MAX_ELEMENTS), path.length);
+	export let path: HeaderEntry[];
+	let active_path: HeaderEntry[];
+	$: active_path = path.slice(Math.max(0, path.length - MAX_ELEMENTS), path.length);
 </script>
 
 <div class="w-full flex">
@@ -17,7 +20,10 @@
 			<ChevronDown className="-rotate-90 text-gray-600 w-4 h-full" />
 		{/if}
 		{#each active_path as part, i}
-			<div class="text-gray-100 text-xl font-bold mx-2 mt-[1px]">{part}</div>
+			<button
+				class="text-gray-100 text-xl font-bold mx-2 mt-[1px]"
+				on:click={() => routeToPage(part.route, part.queryParams)}>{part.label}</button
+			>
 			{#if i != active_path.length - 1}
 				<ChevronDown className="-rotate-90 text-gray-600 w-4 h-full" />
 			{/if}

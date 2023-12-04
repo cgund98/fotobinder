@@ -13,6 +13,7 @@ pub struct ScanEntry {
 // Build a list of all scanned entries
 pub fn scan_directory(root_dir: &str) -> Result<Vec<ScanEntry>, AppError> {
     let mut entries: Vec<ScanEntry> = Vec::new();
+
     for entry in WalkDir::new(root_dir)
         .follow_links(true)
         .into_iter()
@@ -26,7 +27,9 @@ pub fn scan_directory(root_dir: &str) -> Result<Vec<ScanEntry>, AppError> {
         };
 
         // Only allow entries that are either a directory or a valid image file
-        if !path.is_dir() && ext == entity::ImageType::None {
+        let is_root_dir = path.to_string_lossy().eq(root_dir);
+        let is_invalid_image_file = !path.is_dir() && ext == entity::ImageType::None;
+        if is_root_dir || is_invalid_image_file {
             continue;
         }
 
