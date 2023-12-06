@@ -4,3 +4,5 @@ pub struct PathTag {
     pub source_id: String,
     pub tag_id: String,
 }
+
+pub type DbPathTag = PathTag;

@@ -24,7 +24,7 @@
 </script>
 
 <button
-	class="w-full text-left cursor-pointer rounded-md flex h-full justify-items-center bg-gray-700 text-gray-300 fill-gray-400 py-3 px-4 drop-shadow {addCSS} {activeCSS}"
+	class="w-full text-left cursor-pointer rounded-md flex h-full justify-items-center bg-gray-700 text-gray-300 fill-gray-400 py-3 px-4 drop-shadow ease-out duration-300 {addCSS} {activeCSS}"
 	on:click={(e) => {
 		const now = new Date().getTime();
 

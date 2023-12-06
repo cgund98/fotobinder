@@ -67,6 +67,16 @@ fn init_controllers(app: &mut tauri::App, pool: Arc<PoolType>) -> InitResult {
     let tag_controller = biz::tag::Controller::new(tag_repo);
     *state.tag_controller.lock().unwrap() = Some(tag_controller);
 
+    // Init path tags controller
+    let path_tag_repo = data::path_tag::repo::Repo::new(Arc::clone(&pool));
+    let path_tag_controller = biz::path_tag::Controller::new(path_tag_repo, fs_entry_repo.clone());
+    *state.path_tag_controller.lock().unwrap() = Some(path_tag_controller);
+
+    // Init image tags controller
+    let img_tag_repo = data::image_tag::repo::Repo::new(Arc::clone(&pool));
+    let img_tag_controller = biz::image_tag::Controller::new(img_tag_repo, fs_entry_repo.clone());
+    *state.image_tag_controller.lock().unwrap() = Some(img_tag_controller);
+
     // Initialize thumbnail process
     let proc_th_queue = th_queue.clone();
     tokio::spawn(async move { queue::queue_proc(proc_th_queue, fs_entry_repo).await });

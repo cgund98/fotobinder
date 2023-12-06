@@ -28,17 +28,25 @@
 	import Reset from '$lib/components/icons/Reset.svelte';
 	import { routeToPage } from '$lib/nav/route';
 
+	// Read inputs
 	export let data: PageData;
 
 	$: subpath = $page.url.searchParams.get('subpath') || '';
 
 	interface Folder {
+		id: string;
 		name: string;
 	}
 	interface Images {
+		id: string;
 		src: string;
 	}
 
+	// Selection
+	let selectedImages = new Set<String>();
+	let selectedFolders = writable<Set<String>>(new Set());
+
+	// Fetch entries
 	const folders = writable<Folder[]>([]);
 	const images = writable<Images[]>([]);
 	const source = writable<Source>();
@@ -76,28 +84,41 @@
 		const doFn = async () => {
 			const res = await list_by_source_id(data.sourceId, subpath);
 
+			// Parse folders
 			const newFolders = res.entries
 				.filter((e) => e.fs_type == FileType.Directory)
 				.map((e) => {
 					let parts = e.relative_path.split(path.sep);
-					return { name: parts[parts.length - 1] };
+					return { name: parts[parts.length - 1], id: e.relative_path };
 				});
 
+			// Filter selection
+			let folderIds = newFolders.reduce((s, i) => s.add(i.id), new Set<String>());
+			selectedFolders.set(
+				new Set(...Object.keys($selectedFolders).filter((i) => folderIds.has(i)))
+			);
+
+			// Map thumbnail paths to asset url
 			const dataDir = await appDataDir();
 			const mapFileSrc = async (p: string): Promise<string> => {
 				return convertFileSrc(await join(dataDir, 'thumbnails', p));
 			};
 
+			// Parse images
 			const newImages = await Promise.all(
 				res.entries
 					.filter((e) => e.fs_type == FileType.File)
 					.map(async (e) => ({
-						src: await mapFileSrc(e.thumbnail_path)
+						src: await mapFileSrc(e.thumbnail_path),
+						id: e.relative_path
 					}))
 			);
 
-			console.log(res);
+			// Filter selection
+			let imageIds = newImages.reduce((s, i) => s.add(i.id), new Set<String>());
+			selectedImages = new Set(...Object.keys(selectedImages).filter((i) => imageIds.has(i)));
 
+			// Update values
 			folders.set(newFolders);
 			images.set(newImages);
 			updateNav();
@@ -108,6 +129,9 @@
 	// Initialize fields
 	$: fetchSource();
 	$: fetchEntries(subpath);
+	$: imagesSelected = selectedImages.size > 0;
+	$: foldersSelected = $selectedFolders.size > 0;
+	$: noSelection = !imagesSelected && !foldersSelected;
 
 	// Menu options
 	$: menuOptions = [
@@ -115,7 +139,7 @@
 			label: 'Add to Collection',
 			icon: FolderSolid,
 			action: () => (showAddToCollection = true),
-			disabled: false
+			disabled: noSelection
 		},
 		{
 			label: 'Scan for Files',
@@ -155,13 +179,34 @@
 	let showNewTag = false;
 	let showImageDetails = false;
 	let showAddToCollection = false;
+
+	$: console.log($selectedFolders);
 </script>
 
 <PathHeader bind:path={$navEntries} />
 
 <div class="flex justify-between pb-1 px-2">
 	<div class="flex flex-col justify-end">
-		<p class="text-gray-500 text-base">8 Items Selected</p>
+		<p class="text-gray-500 text-base">
+			{#if noSelection}
+				No items selected. <button
+					class="text-teal-400 font-medium ml-2"
+					on:click={() => (selectedImages = new Set($images.map((i) => i.id)))}>Select all</button
+				>
+			{:else if foldersSelected}
+				{$selectedFolders.size} folders selected.
+				<button
+					class="text-teal-400 font-medium ml-2"
+					on:click={() => selectedFolders.set(new Set())}
+					>Deselect all
+				</button>
+			{:else if imagesSelected}
+				{selectedImages.size} images selected.
+				<button class="text-teal-400 font-medium ml-2" on:click={() => (selectedImages = new Set())}
+					>Deselect all
+				</button>
+			{/if}
+		</p>
 	</div>
 
 	<div class="flex flex-row space-x-3 items-center">
@@ -172,6 +217,7 @@
 				showEditTags = true;
 				console.log(showEditTags);
 			}}
+			disabled={noSelection}
 		>
 			<Tag className="w-[15px] -mt-[1px]" />
 		</Button>
@@ -186,11 +232,20 @@
 {/if}
 
 <div class="w-full flex flex-wrap">
-	{#each $folders as folder}
+	{#each $folders as folder (folder.id)}
 		<div class="w-1/2 sm:w-1/3 md:w-1/4 xl:w-1/5 2xl:w-1/6 p-2">
 			<FolderCard
 				name={folder.name}
-				onClick={() => console.log('click')}
+				onClick={() => {
+					selectedFolders.update((s) => {
+						if (s.has(folder.id)) s.delete(folder.id);
+						else s.add(folder.id);
+
+						return s;
+					});
+					selectedImages = new Set();
+				}}
+				active={$selectedFolders.has(folder.id)}
 				onDoubleClick={() =>
 					routeToPage(`/library/${data.sourceId}`, { subpath: path.join(subpath, folder.name) })}
 			/>
@@ -203,12 +258,21 @@
 {/if}
 
 <div class="w-full flex flex-wrap mt-1">
-	{#each $images as image}
+	{#each $images as image (image.id)}
 		<div class="w-1/2 sm:w-1/3 md:w-1/4 xl:w-1/5 2xl:w-1/6 p-1">
 			<ImageCard
+				onChange={(checked) => {
+					if (checked) selectedImages = selectedImages.add(image.id);
+					else selectedImages.delete(image.id);
+
+					selectedImages = selectedImages;
+					selectedFolders.set(new Set());
+				}}
 				onView={() => {
 					showImageDetails = true;
 				}}
+				forceHover={imagesSelected}
+				checked={selectedImages.has(image.id)}
 				--src="url('{image.src}')"
 				--color="red"
 			/>

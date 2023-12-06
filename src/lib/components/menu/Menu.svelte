@@ -39,7 +39,7 @@
 				<div class="flex flex-col">
 					{#each options as option, idx}
 						<button
-							class="truncate border-none space-x-2 flex flex-row py-2 px-3 font-medium text-base text-gray-300 cursor-pointer {option.disabled
+							class="truncate border-none space-x-2 flex flex-row py-2 px-3 font-medium text-base text-gray-300 cursor-pointer ease-out duration-100 {option.disabled
 								? '!text-gray-500'
 								: 'hover:text-teal-400'}"
 							on:click={() => {

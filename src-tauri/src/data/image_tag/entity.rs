@@ -4,3 +4,5 @@ pub struct ImageTag {
     pub source_id: String,
     pub tag_id: String,
 }
+
+pub type DbImageTag = ImageTag;
