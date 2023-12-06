@@ -5,8 +5,8 @@
 	import Search from '../../icons/Search.svelte';
 	import Collection from '../../icons/FolderSolid.svelte';
 	import Library from '../../icons/Library.svelte';
+	import Tag from '$lib/components/icons/Tag.svelte';
 
-	const iconClassNames = 'text-gray-500 h-[20px] w-[20px]';
 	const sepClassNames = 'px-2';
 </script>
 
@@ -16,20 +16,18 @@
 			<img src="/logo-name.svg" class="w-40" alt="Logo Photobinder" />
 		</div>
 
-		<Entry title="Search" href="/search">
-			<Search className={iconClassNames} />
-		</Entry>
+		<Entry title="Search" href="/search" icon={Search}></Entry>
 
 		<Separator className={sepClassNames} />
 
-		<Entry title="Library" href="/library" collapseable>
-			<Library className={iconClassNames + ' !text-teal-500'} />
-		</Entry>
+		<Entry title="Library" href="/library" icon={Library} collapseable></Entry>
 
 		<Separator className={sepClassNames} />
 
-		<Entry title="Collections" href="/collections" collapseable>
-			<Collection className={iconClassNames} />
-		</Entry>
+		<Entry title="Tags" href="/tags" icon={Tag}></Entry>
+
+		<Separator className={sepClassNames} />
+
+		<Entry title="Collections" href="/collections" icon={Collection} collapseable></Entry>
 	</div>
 </div>

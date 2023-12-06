@@ -27,57 +27,59 @@
 	const additionalOptions = [{ label: 'Overlap Included Tags', value: false }];
 </script>
 
-<PathHeader path={['Query Builder']} />
+<PathHeader path={[{ label: 'Query Builder', route: '/search' }]} />
 
 <div class="my-2">
 	<Separator />
 </div>
 
-<div class="flex flex-row w-full justify-between">
-	<div class="flex flex-row space-x-8">
-		<div class="flex flex-col w-[120px]">
-			<div class="flex flex-row justify-between px-3 mb-2">
+<div class="flex flex-col w-full justify-between space-y-1">
+	<div class="flex flex-row justify-between">
+		<div class="flex flex-row space-x-8">
+			<div class="flex flex-row justify-between px-3 mb-2 w-[120px]">
 				<h3 class="font-bold">Rule</h3>
 				<Adjustments className="text-gray-500 w-[20px]" />
 			</div>
-
-			<div class="flex flex-col space-y-1">
-				{#each rules as r}
-					<Dropdown options={ruleTypeOptions} value={r.ruleType} />
-				{/each}
-			</div>
-
-			<div class="flex flex-row space-x-3 px-1 mt-3">
-				<Button className="w-full" title="Add Rule" variant={Variant.Secondary}>
-					<Plus className="w-[15px]" />
-				</Button>
-			</div>
-		</div>
-		<div class="flex flex-col w-64">
-			<div class="flex flex-row justify-between px-3 mb-2">
-				<h3 class="font-bold">Tag</h3>
-				<Tag className="text-gray-500 w-[18px]" />
-			</div>
-
-			<div class="flex flex-col space-y-1">
-				{#each rules as r}
-					<SearchBox placeholder="Search Tag" />
-				{/each}
-			</div>
-		</div>
-	</div>
-
-	<div class="flex flex-col items-end pr-2">
-		<h3 class="font-bold mb-2">Action</h3>
-
-		<div class="flex flex-col space-y-1">
-			{#each rules as r}
-				<div class="flex flex-col justify-around h-[48px]">
-					<IconButton icon={Trash} variant={IconVariant.Embedded} label="Remove Rule" />
+			<div class="flex flex-col space-y-1 w-64">
+				<div class="flex flex-row justify-between px-3 mb-2">
+					<h3 class="font-bold">Tag</h3>
+					<Tag className="text-gray-500 w-[18px]" />
 				</div>
-			{/each}
+			</div>
+		</div>
+
+		<div class="flex flex-row items-end pr-2">
+			<div class="flex flex-col space-y-1">
+				<h3 class="font-bold mb-2">Action</h3>
+			</div>
 		</div>
 	</div>
+	{#each rules as r}
+		<div class="flex hover:bg-gray-900 rounded-lg flex-row justify-between">
+			<div class="flex flex-row space-x-8">
+				<div class="flex flex-col space-y-1 w-[120px]">
+					<Dropdown options={ruleTypeOptions} value={r.ruleType} />
+				</div>
+				<div class="flex flex-col space-y-1 w-64">
+					<SearchBox options={[]} placeholder="Search Tag" />
+				</div>
+			</div>
+
+			<div class="flex flex-row items-end pr-2">
+				<div class="flex flex-col space-y-1">
+					<div class="flex flex-col justify-around h-[48px]">
+						<IconButton icon={Trash} variant={IconVariant.Embedded} label="Remove Rule" />
+					</div>
+				</div>
+			</div>
+		</div>
+	{/each}
+</div>
+
+<div class="flex flex-row space-x-3 px-1 mt-3">
+	<Button className="" title="Add Rule" variant={Variant.Secondary}>
+		<Plus className="w-[15px]" />
+	</Button>
 </div>
 
 <div class="my-4">

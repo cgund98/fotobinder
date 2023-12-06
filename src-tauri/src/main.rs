@@ -16,6 +16,10 @@ async fn main() {
             cmd::fs_entry::scan_source_dir,
             cmd::fs_entry::list_fs_entries_by_source_id,
             cmd::fs_entry::generate_missing_thumbnails,
+            cmd::tag::create_tag,
+            cmd::tag::get_tag,
+            cmd::tag::delete_tag,
+            cmd::tag::list_tags,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 use strum_macros::{Display, EnumString};
 
-#[derive(Display, EnumString, Serialize, PartialEq, Clone)]
+#[derive(Debug, Display, EnumString, Serialize, PartialEq, Clone)]
 pub enum FileType {
     File,
     Directory,
@@ -34,12 +34,12 @@ pub fn parse_image_type(s: String) -> ImageType {
 }
 
 #[derive(Hash, PartialEq, Eq)]
-pub struct FsEntryIds(pub String, pub String, pub String);
+pub struct FsEntryIds(pub String, pub String);
 
-#[derive(Serialize, Clone)]
+#[derive(Debug, Serialize, Clone)]
 pub struct FsEntry {
-    pub name: String,
-    pub subpath: String,
+    pub relative_path: String,
+    pub base_path: String,
     pub source_id: String,
     pub fs_type: FileType,
     pub hidden: bool,
@@ -50,15 +50,15 @@ pub struct FsEntry {
     pub additional_fields: Vec<AdditionalField>,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct AdditionalField {
     pub label: String,
     pub value: String,
 }
 
 pub struct DbFsEntry {
-    pub name: String,
-    pub subpath: String,
+    pub relative_path: String,
+    pub base_path: String,
     pub source_id: String,
     pub fs_type: String,
     pub hidden: bool,
@@ -75,8 +75,8 @@ impl From<FsEntry> for DbFsEntry {
         let additional_fields = serde_json::to_string(&e.additional_fields).unwrap();
 
         Self {
-            name: e.name,
-            subpath: e.subpath,
+            relative_path: e.relative_path,
+            base_path: e.base_path,
             source_id: e.source_id,
             fs_type: e.fs_type.to_string(),
             hidden: e.hidden,
@@ -95,8 +95,8 @@ impl From<DbFsEntry> for FsEntry {
             serde_json::from_str(&e.additional_fields).unwrap();
 
         Self {
-            name: e.name,
-            subpath: e.subpath,
+            relative_path: e.relative_path,
+            base_path: e.base_path,
             source_id: e.source_id,
             fs_type: FileType::from_str(&e.fs_type).unwrap(),
             hidden: e.hidden,

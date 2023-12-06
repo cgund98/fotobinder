@@ -5,10 +5,10 @@ use crate::{data::fs_entry::entity, errors::AppError};
 #[derive(Debug)]
 pub struct ScanEntry {
     pub depth: usize,
-    pub name: String,
+    pub relative_path: String,
     pub is_dir: bool,
     pub ext: entity::ImageType,
-    pub subpath: String,
+    pub base_path: String,
 }
 // Build a list of all scanned entries
 pub fn scan_directory(root_dir: &str) -> Result<Vec<ScanEntry>, AppError> {
@@ -19,7 +19,6 @@ pub fn scan_directory(root_dir: &str) -> Result<Vec<ScanEntry>, AppError> {
         .into_iter()
         .filter_map(|e| e.ok())
     {
-        let f_name = entry.file_name().to_string_lossy();
         let path = entry.path();
         let ext = match path.extension() {
             Some(s) => entity::parse_image_type(String::from(s.to_string_lossy())),
@@ -33,19 +32,21 @@ pub fn scan_directory(root_dir: &str) -> Result<Vec<ScanEntry>, AppError> {
             continue;
         }
 
-        let mut e = ScanEntry {
+        if entry.depth() == 0 {
+            continue;
+        }
+
+        let relative_path = path.strip_prefix(root_dir)?;
+        let parent_path = path.parent().unwrap();
+        let base_path = parent_path.strip_prefix(root_dir)?;
+
+        let e = ScanEntry {
             depth: entry.depth(),
-            name: String::from(f_name),
+            relative_path: String::from(relative_path.to_string_lossy()),
             is_dir: path.is_dir(),
-            subpath: String::from(""),
+            base_path: String::from(base_path.to_string_lossy()),
             ext,
         };
-
-        if e.depth > 0 {
-            let parent_path = path.parent().unwrap();
-            let subpath = parent_path.strip_prefix(root_dir)?;
-            e.subpath = String::from(subpath.to_string_lossy());
-        }
 
         entries.push(e);
     }

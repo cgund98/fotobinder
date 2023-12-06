@@ -7,8 +7,7 @@ use crate::{
 
 #[derive(Clone)]
 pub struct Task {
-    pub name: String,
-    pub subpath: String,
+    pub relative_path: String,
     pub source_id: String,
     pub source: String,
     pub destination: String,
@@ -22,7 +21,7 @@ pub fn init_queue() -> Arc<TaskQueue> {
 
 fn update_entry(task: Task, repo: &Arc<Repo>, w: u32, h: u32) -> Result<(), AppError> {
     // Fetch entry
-    let mut entry = repo.get_by_ids(&task.name, &task.subpath, &task.source_id)?;
+    let mut entry = repo.get_by_ids(&task.relative_path, &task.source_id)?;
 
     // Update generation status
     entry.thumbnail_generating = false;
@@ -43,7 +42,7 @@ fn update_entry(task: Task, repo: &Arc<Repo>, w: u32, h: u32) -> Result<(), AppE
 }
 
 fn check_in_progress(task: Task, repo: &Arc<Repo>) -> Result<bool, AppError> {
-    let entry = repo.get_by_ids(&task.name, &task.subpath, &task.source_id)?;
+    let entry = repo.get_by_ids(&task.relative_path, &task.source_id)?;
 
     Ok(entry.thumbnail_generating)
 }

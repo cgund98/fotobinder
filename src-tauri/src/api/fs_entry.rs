@@ -4,8 +4,8 @@ use crate::data::fs_entry::entity;
 
 #[derive(Serialize)]
 pub struct FsEntry {
-    pub name: String,
-    pub subpath: String,
+    pub relative_path: String,
+    pub base_path: String,
     pub source_id: String,
     pub fs_type: entity::FileType,
     pub hidden: bool,
@@ -24,8 +24,8 @@ pub struct FsEntries {
 impl From<entity::FsEntry> for FsEntry {
     fn from(e: entity::FsEntry) -> Self {
         Self {
-            name: e.name,
-            subpath: e.subpath,
+            relative_path: e.relative_path,
+            base_path: e.base_path,
             source_id: e.source_id,
             fs_type: e.fs_type,
             hidden: e.hidden,

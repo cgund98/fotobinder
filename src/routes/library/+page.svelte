@@ -73,7 +73,7 @@
 
 <PathHeader path={[{ label: 'My Library', route: '/library' }]} />
 
-<div class="flex justify-between py-1 px-2 mt-2">
+<div class="flex justify-between pb-1 px-2">
 	<div class="flex flex-col justify-end">
 		<p class="text-gray-500 text-base">
 			Select or add an image source. Double-click to view a source's contents.

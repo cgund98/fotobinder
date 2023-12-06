@@ -51,8 +51,7 @@ impl Controller {
 
             // Add task to queue
             self.queue.push(Task {
-                name: entry.name,
-                subpath: entry.subpath,
+                relative_path: entry.relative_path,
                 source_id: entry.source_id,
                 source: th_path_str,
                 destination: dest_path_str,
@@ -107,17 +106,15 @@ impl Controller {
                 false => entity::FileType::File,
             };
 
-            let full_path = Path::new(root_dir)
-                .join(entry.subpath.clone())
-                .join(entry.name.clone());
+            let full_path = Path::new(root_dir).join(entry.relative_path.clone());
             let sha256 = match entry.is_dir {
                 true => String::from(""),
                 false => image::hash(&full_path)?,
             };
 
             let mut e = entity::FsEntry {
-                name: entry.name,
-                subpath: entry.subpath,
+                base_path: entry.base_path,
+                relative_path: entry.relative_path,
                 source_id: String::from(source_id),
                 fs_type,
                 hidden: false,
@@ -129,7 +126,7 @@ impl Controller {
             };
 
             // If entry already exists, use that as a base
-            let ids = entity::FsEntryIds(e.name.clone(), e.subpath.clone(), e.source_id.clone());
+            let ids = entity::FsEntryIds(e.relative_path.clone(), e.source_id.clone());
             if entries_map.contains_key(&ids) {
                 e = entries_map.get(&ids).unwrap().clone();
             }
@@ -145,8 +142,7 @@ impl Controller {
             {
                 // Add task to queue
                 task = Some(Task {
-                    name: e.name.clone(),
-                    subpath: e.subpath.clone(),
+                    relative_path: e.relative_path.clone(),
                     source_id: e.source_id.clone(),
                     source: th_path_str,
                     destination: dest_path_str.clone(),
@@ -180,22 +176,15 @@ impl Controller {
 
         // Populate hashset with scanned entities
         for entry in entries {
-            let path = Path::new(&entry.subpath).join(&entry.name);
-            found.insert(String::from(path.to_string_lossy()));
+            found.insert(entry.relative_path.clone());
         }
 
         // Delete entries in the datastore that haven't been scanned
         let mut deleted_count: usize = 0;
         for entry in cur_entries {
-            let path = Path::new(&entry.subpath).join(&entry.name);
-            let path_str = String::from(path.to_string_lossy());
-            if found.contains(&path_str) {
+            if found.contains(&entry.relative_path) {
                 entries_map.insert(
-                    entity::FsEntryIds(
-                        entry.name.clone(),
-                        entry.subpath.clone(),
-                        entry.source_id.clone(),
-                    ),
+                    entity::FsEntryIds(entry.relative_path.clone(), entry.source_id.clone()),
                     entry.clone(),
                 );
                 continue;
@@ -210,8 +199,7 @@ impl Controller {
             }
 
             // Delete entity
-            self.repo
-                .delete(&entry.name, &entry.subpath, &entry.source_id)?;
+            self.repo.delete(&entry.relative_path, &entry.source_id)?;
 
             deleted_count += 1;
         }

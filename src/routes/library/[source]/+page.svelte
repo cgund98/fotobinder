@@ -78,7 +78,10 @@
 
 			const newFolders = res.entries
 				.filter((e) => e.fs_type == FileType.Directory)
-				.map((e) => ({ name: e.name }));
+				.map((e) => {
+					let parts = e.relative_path.split(path.sep);
+					return { name: parts[parts.length - 1] };
+				});
 
 			const dataDir = await appDataDir();
 			const mapFileSrc = async (p: string): Promise<string> => {
@@ -92,6 +95,8 @@
 						src: await mapFileSrc(e.thumbnail_path)
 					}))
 			);
+
+			console.log(res);
 
 			folders.set(newFolders);
 			images.set(newImages);
@@ -154,7 +159,7 @@
 
 <PathHeader bind:path={$navEntries} />
 
-<div class="flex justify-between py-1 px-2 mt-2">
+<div class="flex justify-between pb-1 px-2">
 	<div class="flex flex-col justify-end">
 		<p class="text-gray-500 text-base">8 Items Selected</p>
 	</div>
@@ -175,6 +180,10 @@
 </div>
 
 <Separator className="my-2" />
+
+{#if $folders.length === 0 && $images.length === 0}
+	<p class="text-left px-2">Folder is empty.</p>
+{/if}
 
 <div class="w-full flex flex-wrap">
 	{#each $folders as folder}
@@ -220,6 +229,7 @@
 
 {#if showNewTag}
 	<NewTagModal
+		tags={[]}
 		onClose={() => {
 			showNewTag = false;
 		}}

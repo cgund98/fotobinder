@@ -8,8 +8,49 @@
 	import Plus from '../icons/Plus.svelte';
 	import Trash from '../icons/Trash.svelte';
 	import SearchBox from '../input/SearchBox.svelte';
+	import { create, type Tag } from '$lib/api/tag';
+	import { catchBad, good } from '$lib/store/alerts';
 
 	export let onClose: () => void = () => {};
+	export let tags: Tag[];
+
+	// Form values
+	let name = '';
+	let parentId: string | undefined = undefined;
+
+	// Build search options
+	const buildOptions = (tags: Tag[]) => {
+		const map = tags.reduce(
+			(cur, prev) => {
+				cur[prev.id] = prev.name;
+				return cur;
+			},
+			{} as { [id: string]: string }
+		);
+		const options = tags
+			.filter((tag) => tag.parent_id === null)
+			.map((tag) => ({
+				label: tag.name,
+				value: tag.id
+			}));
+
+		return [...options, { label: 'No Parent', value: undefined }];
+	};
+
+	// Form validation
+	const validate = (name: string, parentId: string | undefined) => {
+		// Validate name
+		const validName = name.length > 0;
+
+		// Validate parent tag ID
+		const validParentTag = parentId === undefined || parentId.length > 0;
+
+		return validName && validParentTag;
+	};
+
+	// Reactive variables
+	$: searchOptions = buildOptions(tags);
+	$: valid = validate(name, parentId);
 </script>
 
 <Modal>
@@ -30,21 +71,39 @@
 
 	<div class="flex space-x-6">
 		<div class="grow">
-			<TextInput placeholder="Name" label="Name" />
+			<TextInput bind:value={name} placeholder="Name" label="Name" />
 		</div>
 
 		<div class="grow">
-			<SearchBox placeholder="Parent Tag" label="Parent Tag" open />
+			<SearchBox
+				bind:value={parentId}
+				options={searchOptions}
+				placeholder="Parent Tag"
+				label="Parent Tag"
+			/>
 		</div>
 	</div>
 
 	<div class="w-full flex flex-row justify-between content-bottom mt-3">
-		<div class="flex flex-col justify-between"></div>
-		<div class="flex space-x-4">
-			<Button variant={Variant.Warn} title="Discard">
+		<div class="flex flex-col justify-between">
+			<Button variant={Variant.Warn} title="Discard" onClick={onClose}>
 				<Trash className="w-[16px] h-full" />
 			</Button>
-			<Button variant={Variant.Primary} title="Create" disabled>
+		</div>
+		<div class="flex space-x-4">
+			<Button
+				variant={Variant.Primary}
+				title="Create"
+				disabled={!valid}
+				onClick={() => {
+					create(name, parentId || null)
+						.then(() => {
+							good(`Created tag '${name}'.`);
+							onClose();
+						})
+						.catch(catchBad);
+				}}
+			>
 				<Plus className="w-[16px] -mt-[1px]" />
 			</Button>
 		</div>

@@ -21,8 +21,8 @@ export interface AdditionalField {
 }
 
 export interface FsEntry {
-	name: string;
-	subpath: string;
+	relative_path: string;
+	base_path: string;
 	source_id: string;
 	fs_type: FileType;
 	hidden: boolean;

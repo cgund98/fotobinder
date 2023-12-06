@@ -20,7 +20,7 @@ pub fn hash(path: &Path) -> Result<String, AppError> {
 
 // Generate the path of an original entry
 pub fn gen_origin_path(entry: &entity::FsEntry, root_dir: &str) -> std::path::PathBuf {
-    Path::new(root_dir).join(&entry.subpath).join(&entry.name)
+    Path::new(root_dir).join(&entry.relative_path)
 }
 
 // Generate the path of a thumbnail image

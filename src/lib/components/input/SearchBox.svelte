@@ -6,19 +6,30 @@
 	export let label: string = '';
 	export let placeholder: string = 'Placeholder';
 	export let open: boolean = false;
-	export let value: string = '';
+	export let value: string | undefined = '';
+	export let inputValue: string = '';
 
-	const items = [
-		{ label: 'Item' },
-		{ label: 'Item' },
-		{ label: 'Item' },
-		{ label: 'Item' },
-		{ label: 'Item' }
-	];
+	interface Option {
+		label: string;
+		value?: string;
+	}
+
+	export let options: Option[];
 
 	const handler: FormEventHandler<HTMLInputElement> = (e) => {
 		let t = e.target as HTMLInputElement;
-		value = t.value;
+
+		// Update displayed value
+		inputValue = t.value;
+
+		// Update actual value
+		const hasMatch = options.reduce((cur, prev) => cur || prev.label == t.value, true);
+		if (hasMatch)
+			value = options.reduce(
+				(cur, prev) => (cur ? cur : prev.label == t.value ? prev.value : ''),
+				'' as string | undefined
+			);
+		else value = '';
 	};
 </script>
 
@@ -32,8 +43,10 @@
 		<div class="flex flex-row text-gray-100 bg-gray-700 px-3 py-2 rounded-lg">
 			<input
 				{placeholder}
-				{value}
+				value={inputValue}
 				on:input={handler}
+				on:focus={() => (open = true)}
+				on:blur={() => (open = false)}
 				class="placeholder:text-gray-500 bg-transparent caret-gray-100 appearance-none w-full accent-transparent focus:outline-none text-base"
 			/>
 			<div><Search className="text-gray-500 w-[20px]" /></div>
@@ -44,10 +57,19 @@
 				class="z-10 inset-x-0 text-base list-none bg-gray-700 rounded-lg divide-y divide-gray-100 shadow-xl absolute my-2 max-h-32 overflow-y-scroll"
 			>
 				<ul class="">
-					{#each items as item}
-						<li class="block py-2 px-4 text-base text-gray-300 hover:bg-gray-600 cursor-pointer">
-							{item.label}
-						</li>
+					{#each options as option}
+						<button
+							class="text-left block w-full py-2 px-4 text-base text-gray-300 hover:bg-gray-600 cursor-pointer {option.value
+								? ''
+								: 'italic'}"
+							on:mousedown={() => {
+								value = option.value;
+								inputValue = option.label;
+								open = false;
+							}}
+						>
+							{option.label}
+						</button>
 					{/each}
 				</ul>
 			</div>

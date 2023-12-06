@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { create } from '../../../api/source';
+	import { create, scan } from '../../../api/source';
 	import type { Source } from '../../../api/source';
 
 	import Button, { Variant } from '../../button/Button.svelte';
@@ -12,7 +12,7 @@
 	import TextInput from '../../input/TextInput.svelte';
 	import Modal from '../../layout/Modal.svelte';
 	import Close from '../../icons/Close.svelte';
-	import { catchBad } from '../../../store/alerts';
+	import { catchBad, good } from '../../../store/alerts';
 
 	export let onClose: (source?: Source) => void = () => {};
 
@@ -25,6 +25,10 @@
 	const handleSubmit = async () => {
 		try {
 			const source = await create(name, type, path);
+			let scanRes = await scan(source.id);
+			good(
+				`Created source '${source.name}'. Found ${scanRes.entries_created} file entries when scanned.`
+			);
 			onClose(source);
 		} catch (err: any) {
 			catchBad(err);
