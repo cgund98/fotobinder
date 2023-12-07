@@ -1,5 +1,8 @@
 use crate::{
-    api::image_tag::ImageTags, data::image_tag::entity, errors::AppError, state::ServiceAccess,
+    api::image_tag::{ImageTags, TagAssignments},
+    data::image_tag::entity,
+    errors::AppError,
+    state::ServiceAccess,
 };
 
 #[tauri::command]
@@ -48,4 +51,14 @@ pub fn delete_image_tag(
     handle: tauri::AppHandle,
 ) -> Result<(), AppError> {
     handle.image_tag_ctrl(|ctrl| ctrl.delete(tag_id, relative_path, source_id))
+}
+
+#[tauri::command]
+pub fn assign_image_tags(
+    relative_paths: Vec<String>,
+    source_id: &str,
+    assignments: TagAssignments,
+    handle: tauri::AppHandle,
+) -> Result<(), AppError> {
+    handle.image_tag_ctrl(|ctrl| ctrl.assign(relative_paths, source_id, assignments))
 }

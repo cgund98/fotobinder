@@ -16,9 +16,7 @@ impl Repo {
 
         self.pool.get().unwrap().execute(
             "INSERT INTO path_tags (tag_id, base_path, source_id) VALUES (?1, ?2, ?3) \
-            ON CONFLICT(id) DO UPDATE SET \
-                parent_id=excluded.parent_id, \
-                name=excluded.name",
+            ON CONFLICT(tag_id, base_path, source_id) DO NOTHING",
             (&d_entry.tag_id, &d_entry.base_path, &d_entry.source_id),
         )?;
 

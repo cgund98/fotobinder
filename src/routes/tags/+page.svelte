@@ -34,7 +34,6 @@
 
 			return cur;
 		}, {} as TagsBlock);
-	$: console.log($tags);
 
 	const refreshTags = () => {
 		list()
@@ -64,7 +63,7 @@
 <Separator className="my-2" />
 
 <div class="px-2">
-	{#each Object.values(tagsBlock) as { tag, children }, i}
+	{#each Object.values(tagsBlock) as { tag, children }, i (tag.id)}
 		<div class="hover:bg-gray-800 rounded flex flex-row align-center w-full justify-between">
 			<div class="flex-grow flex flex-row">
 				<div class="text-left w-8 flex flex-col justify-around">
@@ -153,7 +152,6 @@
 
 {#if showNewTag}
 	<NewTagModal
-		tags={$tags}
 		onClose={() => {
 			showNewTag = false;
 			refreshTags();

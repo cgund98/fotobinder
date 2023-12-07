@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use crate::{
+    api,
     data::{
         fs_entry,
         image_tag::{entity, repo::Repo},
@@ -65,5 +66,34 @@ impl Controller {
         source_id: &str,
     ) -> Result<(), AppError> {
         self.repo.delete(tag_id, relative_path, source_id)
+    }
+
+    pub fn assign(
+        &self,
+        relative_paths: Vec<String>,
+        source_id: &str,
+        assignments: api::image_tag::TagAssignments,
+    ) -> Result<(), AppError> {
+        for relative_path in relative_paths.iter() {
+            // Ensure path exists
+            self.fs_repo.get_by_ids(relative_path, source_id)?;
+
+            // Add tags
+            for tag_id in assignments.add.iter() {
+                let tag = entity::ImageTag {
+                    relative_path: String::from(relative_path),
+                    source_id: String::from(source_id),
+                    tag_id: String::from(tag_id),
+                };
+                self.repo.save(tag)?;
+            }
+
+            // Remove tags
+            for tag_id in assignments.remove.iter() {
+                self.repo.delete(tag_id, relative_path, source_id)?;
+            }
+        }
+
+        Ok(())
     }
 }

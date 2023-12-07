@@ -43,8 +43,8 @@
 	}
 
 	// Selection
-	let selectedImages = new Set<String>();
-	let selectedFolders = writable<Set<String>>(new Set());
+	let selectedImages = new Set<string>();
+	let selectedFolders = writable<Set<string>>(new Set());
 
 	// Fetch entries
 	const folders = writable<Folder[]>([]);
@@ -176,11 +176,8 @@
 
 	// Modals
 	let showEditTags = false;
-	let showNewTag = false;
 	let showImageDetails = false;
 	let showAddToCollection = false;
-
-	$: console.log($selectedFolders);
 </script>
 
 <PathHeader bind:path={$navEntries} />
@@ -215,7 +212,6 @@
 			className="disabled:bg-teal-700"
 			onClick={() => {
 				showEditTags = true;
-				console.log(showEditTags);
 			}}
 			disabled={noSelection}
 		>
@@ -282,20 +278,11 @@
 
 {#if showEditTags}
 	<EditTagsModal
+		selectedFolders={$selectedFolders}
+		{selectedImages}
+		sourceId={data.sourceId}
 		onClose={() => {
 			showEditTags = false;
-		}}
-		onNewTag={() => {
-			showNewTag = true;
-		}}
-	/>
-{/if}
-
-{#if showNewTag}
-	<NewTagModal
-		tags={[]}
-		onClose={() => {
-			showNewTag = false;
 		}}
 	/>
 {/if}

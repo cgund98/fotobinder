@@ -8,11 +8,20 @@
 	import Plus from '../icons/Plus.svelte';
 	import Trash from '../icons/Trash.svelte';
 	import SearchBox from '../input/SearchBox.svelte';
-	import { create, type Tag } from '$lib/api/tag';
+	import { create, list, type Tag } from '$lib/api/tag';
 	import { catchBad, good } from '$lib/store/alerts';
+	import { writable } from 'svelte/store';
 
 	export let onClose: () => void = () => {};
-	export let tags: Tag[];
+	let tags = writable<Tag[]>([]);
+
+	const refreshTags = () => {
+		list()
+			.then((res) => tags.set(res.tags))
+			.catch(catchBad);
+	};
+
+	refreshTags();
 
 	// Form values
 	let name = '';
@@ -49,7 +58,7 @@
 	};
 
 	// Reactive variables
-	$: searchOptions = buildOptions(tags);
+	$: searchOptions = buildOptions($tags);
 	$: valid = validate(name, parentId);
 </script>
 

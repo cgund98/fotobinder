@@ -25,11 +25,13 @@ async fn main() {
             cmd::path_tag::list_path_tags,
             cmd::path_tag::list_path_tags_by_base_path,
             cmd::path_tag::delete_path_tag,
+            cmd::path_tag::assign_path_tags,
             cmd::image_tag::create_image_tag,
             cmd::image_tag::get_image_tag,
             cmd::image_tag::list_image_tags,
             cmd::image_tag::list_image_tags_by_relative_path,
             cmd::image_tag::delete_image_tag,
+            cmd::image_tag::assign_image_tags,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

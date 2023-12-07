@@ -19,7 +19,7 @@
 
 	export let onClick: MouseEventHandler<HTMLButtonElement> = () => {};
 
-	const props = {
+	$: props = {
 		className: `w-[18px] mx-auto ${className}`
 	};
 
