@@ -8,6 +8,7 @@
 	export let open: boolean = false;
 	export let value: string | undefined = '';
 	export let inputValue: string = '';
+	export let onChange: (value: string | undefined) => void = () => {};
 
 	interface Option {
 		label: string;
@@ -30,7 +31,20 @@
 				'' as string | undefined
 			);
 		else value = '';
+
+		onChange(value);
 	};
+
+	$: inputValue = options.reduce(
+		(prev, cur) => (cur.value == value ? cur.label : prev),
+		inputValue
+	);
+
+	$: filteredOptions = inputValue
+		? options.filter((option) =>
+				option.label.toLocaleLowerCase().includes(inputValue.toLocaleLowerCase())
+		  )
+		: options;
 </script>
 
 <div class="flex flex-col py-1 px-1 {className}">
@@ -54,10 +68,10 @@
 
 		{#if open}
 			<div
-				class="z-10 inset-x-0 text-base list-none bg-gray-700 rounded-lg divide-y divide-gray-100 shadow-xl absolute my-2 max-h-32 overflow-y-scroll"
+				class="z-10 inset-x-0 text-base list-none bg-gray-800 rounded-lg divide-y divide-gray-100 shadow-xl absolute my-2 max-h-32 overflow-y-scroll"
 			>
 				<ul class="">
-					{#each options as option}
+					{#each filteredOptions as option (option.value)}
 						<button
 							class="text-left block w-full py-2 px-4 text-base text-gray-300 hover:bg-gray-600 cursor-pointer {option.value
 								? ''
@@ -66,6 +80,7 @@
 								value = option.value;
 								inputValue = option.label;
 								open = false;
+								onChange(value);
 							}}
 						>
 							{option.label}

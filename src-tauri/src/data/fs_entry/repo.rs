@@ -207,6 +207,92 @@ impl Repo {
         Ok(entries)
     }
 
+    pub fn list_by_tags(
+        &self,
+        includes: Vec<String>,
+        excludes: Vec<String>,
+    ) -> Result<Vec<entity::FsEntry>, crate::errors::AppError> {
+        let pool = self.pool.get().unwrap();
+
+        let excludes_str = excludes
+            .iter()
+            .map(|x| format!("'{}'", x))
+            .collect::<Vec<_>>()
+            .join(", ");
+        let includes_str = includes
+            .iter()
+            .map(|x| format!("'{}'", x))
+            .collect::<Vec<_>>()
+            .join(", ");
+
+        let sql = format!(
+            "WITH path_results AS ( \
+            SELECT fs_entries.relative_path, fs_entries.source_id, path_tags.tag_id \
+            from path_tags  \
+            INNER JOIN fs_entries  \
+                ON fs_entries.relative_path LIKE path_tags.base_path || '%'  \
+                AND fs_entries.source_id = path_tags.source_id \
+            WHERE fs_entries.fs_type = 'File' \
+        ), image_results AS ( \
+            SELECT fs_entries.relative_path, fs_entries.source_id, image_tags.tag_id  \
+            from image_tags  \
+            INNER JOIN fs_entries  \
+                ON fs_entries.relative_path = image_tags.relative_path  \
+                AND fs_entries.source_id = image_tags.source_id \
+            WHERE fs_entries.fs_type = 'File' \
+        ), tags_union AS ( \
+            SELECT * FROM path_results  \
+            UNION  \
+            SELECT * FROM image_results \
+        ), excludes_results AS ( \
+            SELECT * FROM tags_union \
+            WHERE tag_id IN ({excludes_str})        \
+        ), includes_results AS ( \
+            SELECT * FROM tags_union \
+            WHERE tag_id IN ({includes_str}) \
+        ), results AS ( \
+            SELECT inc.* FROM includes_results inc \
+            LEFT JOIN excludes_results exc \
+                ON inc.relative_path = exc.relative_path \
+                AND inc.source_id = exc.source_id \
+            WHERE exc.relative_path IS NULL \
+        ) \
+        SELECT fs_entries.*  \
+        from results  \
+        INNER JOIN fs_entries  \
+            ON fs_entries.relative_path = results.relative_path  \
+            AND fs_entries.source_id = results.source_id"
+        );
+
+        let mut stmt = pool.prepare(&sql)?;
+
+        // Map results
+        let ent_iter = stmt.query_map([], |row| {
+            Ok(entity::DbFsEntry {
+                relative_path: row.get(0)?,
+                base_path: row.get(1)?,
+                source_id: row.get(2)?,
+                fs_type: row.get(3)?,
+                hidden: row.get(4)?,
+                sha256: row.get(5)?,
+                image_type: row.get(6)?,
+                thumbnail_path: row.get(7)?,
+                thumbnail_generating: row.get(8)?,
+                additional_fields: row.get(9)?,
+            })
+        })?;
+
+        let mut entries: Vec<entity::FsEntry> = Vec::new();
+
+        for db_entry in ent_iter {
+            let entry = entity::FsEntry::from(db_entry.unwrap());
+
+            entries.push(entry);
+        }
+
+        Ok(entries)
+    }
+
     pub fn delete(
         &self,
         relative_path: &str,

@@ -33,3 +33,14 @@ pub fn list_fs_entries_by_source_id(
         .fs_entry_ctrl(|ctrl| ctrl.list_by_source_id_and_path_prefix(source_id, path_prefix))
         .map(FsEntries::from)
 }
+
+#[tauri::command(async)]
+pub fn list_fs_entries_by_tags(
+    includes: Vec<String>,
+    excludes: Vec<String>,
+    handle: tauri::AppHandle,
+) -> Result<FsEntries, AppError> {
+    handle
+        .fs_entry_ctrl(|ctrl| ctrl.list_by_tags(includes, excludes))
+        .map(FsEntries::from)
+}

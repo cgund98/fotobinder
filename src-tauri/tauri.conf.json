@@ -3,7 +3,7 @@
 		"beforeDevCommand": "npm run dev",
 		"beforeBuildCommand": "npm run build",
 		"devPath": "http://localhost:1420",
-		"distDir": "../dist"
+		"distDir": "../build"
 	},
 	"package": {
 		"productName": "fotobinder",
@@ -41,7 +41,7 @@
 		"bundle": {
 			"active": true,
 			"targets": "all",
-			"identifier": "com.tauri.dev",
+			"identifier": "fotobinder",
 			"icon": [
 				"icons/32x32.png",
 				"icons/128x128.png",

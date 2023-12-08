@@ -50,3 +50,12 @@ export const generate_missing_thumbnails = async (sourceId: string) => {
 		sourceId
 	})) as number;
 };
+
+export const list_by_tags = async (includes: string[], excludes: string[]) => {
+	const entries = (await invoke('list_fs_entries_by_tags', {
+		includes,
+		excludes
+	})) as FsEntries;
+
+	return entries;
+};

@@ -8,6 +8,7 @@
 	export let onView: () => void = () => {};
 	export let forceHover: boolean = false;
 	export let checked = false;
+	export let name: string;
 
 	let hovered = false;
 
@@ -54,8 +55,11 @@
 	/>
 	<div class="h-full w-full image-card bg-cover bg-no-repeat bg-center absolute top-0 z-10" />
 	<div class="h-full w-full absolute top-0 z-0 flex bg-gray-900 justify-around">
-		<div class="flex flex-col justify-around h-full">
-			<Photo className="text-gray-600" />
+		<div class="flex flex-col justify-around h-full w-full">
+			<div class="flex flex-col w-full items-center">
+				<Photo className="text-gray-600 " />
+				<p class="truncate w-full text-gray-600 px-4 text-sm">{name}</p>
+			</div>
 		</div>
 	</div>
 </div>

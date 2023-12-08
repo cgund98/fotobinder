@@ -39,6 +39,7 @@
 	}
 	interface Images {
 		id: string;
+		name: string;
 		src: string;
 	}
 
@@ -108,10 +109,14 @@
 			const newImages = await Promise.all(
 				res.entries
 					.filter((e) => e.fs_type == FileType.File)
-					.map(async (e) => ({
-						src: await mapFileSrc(e.thumbnail_path),
-						id: e.relative_path
-					}))
+					.map(async (e) => {
+						const parts = e.relative_path.split(path.sep);
+						return {
+							src: await mapFileSrc(e.thumbnail_path),
+							id: e.relative_path,
+							name: parts[parts.length - 1]
+						};
+					})
 			);
 
 			// Filter selection
@@ -269,6 +274,7 @@
 				}}
 				forceHover={imagesSelected}
 				checked={selectedImages.has(image.id)}
+				name={image.name}
 				--src="url('{image.src}')"
 				--color="red"
 			/>
