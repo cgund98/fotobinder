@@ -31,6 +31,7 @@
 
 	let tags = writable<TagsState>({});
 	let tagsBlock = writable<TagsBlock>({});
+	let filteredTagsBlock = writable<TagsBlock>({});
 
 	interface TagsBlock {
 		[key: string]: {
@@ -42,10 +43,45 @@
 
 	interface TagsState {
 		[id: string]: {
+			name: string;
 			checked: boolean;
 			partial: boolean;
 		};
 	}
+
+	// Search functionality
+	let search = '';
+
+	const filterSearch = (search: string) => {
+		if (!search) filteredTagsBlock.set({ ...$tagsBlock });
+		const filteredIds = new Set(
+			Object.entries($tags)
+				.filter(([_, tag]) => tag.name.toLowerCase().includes(search.toLowerCase()))
+				.map(([id, _]) => id)
+		);
+
+		let filteredBlock = Object.entries($tagsBlock).reduce((block, [id, entry]) => {
+			if (filteredIds.has(id)) {
+				block[id] = entry;
+			} else {
+				let filteredChildren = entry.children.filter((child) => filteredIds.has(child.id));
+				if (filteredChildren.length > 0) {
+					let e = { ...entry };
+					e.children = filteredChildren;
+					block[id] = e;
+				}
+			}
+
+			return block;
+		}, {} as TagsBlock);
+
+		filteredTagsBlock.set(filteredBlock);
+	};
+
+	$: filterSearch(search);
+
+	$: console.log($filteredTagsBlock);
+	$: console.log($tagsBlock);
 
 	// 🤨🤨 - I know this is kind of spaghetti but it works
 	const refreshTags = () => {
@@ -53,7 +89,7 @@
 			const res = await list();
 
 			let state = res.tags.reduce((b, t) => {
-				b[t.id] = { checked: false, partial: false };
+				b[t.id] = { checked: false, partial: false, name: t.name };
 				return b;
 			}, {} as TagsState);
 
@@ -76,7 +112,7 @@
 			}
 			const selSize = selectedImages.size ? selectedImages.size : selectedFolders.size;
 			Object.entries(tagFreqs).forEach(([id, count]) => {
-				state[id] = { checked: true, partial: count != selSize };
+				state[id] = { checked: true, partial: count != selSize, name: state[id]?.name };
 			});
 			tags.set(state);
 
@@ -95,6 +131,8 @@
 						return cur;
 					}, {} as TagsBlock)
 			);
+
+			filteredTagsBlock.set({ ...$tagsBlock });
 		};
 
 		doFn().catch(catchBad);
@@ -153,7 +191,7 @@
 			<Separator className="bg-gray-700" />
 		</div>
 		<div class="w-full flex flex-row justify-between mt-2">
-			<SearchInput placeholder="Search" className="basis-[250px]" />
+			<SearchInput bind:value={search} placeholder="Search" className="basis-[250px]" />
 			<div>
 				<Button variant={Variant.Secondary} onClick={() => (showNewTag = true)} title="Create Tag">
 					<Plus className="w-[15px] h-full" />
@@ -166,7 +204,7 @@
 				<div
 					class="mt-2 flex-col space-y-1.5 overflow-scroll min-h-[200px] max-h-[300px] pb-4 relative"
 				>
-					{#each Object.values($tagsBlock) as { tag, children, collapsed } (tag.id)}
+					{#each Object.values($filteredTagsBlock) as { tag, children, collapsed } (tag.id)}
 						<Checkbox
 							label={tag.name}
 							collapseable={children.length > 0}
@@ -217,8 +255,10 @@
 							</TagBlock>
 						{/if}
 					{/each}
-					{#if Object.keys($tagsBlock).length == 0}
+					{#if Object.keys($tagsBlock).length === 0}
 						<p class="text-gray-400 italic">No tags available.</p>
+					{:else if Object.keys($filteredTagsBlock).length === 0}
+						<p class="text-gray-400 italic">No matching tags available.</p>
 					{/if}
 				</div>
 
