@@ -36,7 +36,7 @@ export interface FsEntries {
 	entries: FsEntry[];
 }
 
-export const list_by_source_id = async (sourceId: string, pathPrefix: string) => {
+export const listBySourceId = async (sourceId: string, pathPrefix: string) => {
 	const entries = (await invoke('list_fs_entries_by_source_id', {
 		sourceId,
 		pathPrefix
@@ -45,13 +45,21 @@ export const list_by_source_id = async (sourceId: string, pathPrefix: string) =>
 	return entries;
 };
 
-export const generate_missing_thumbnails = async (sourceId: string) => {
+export const listbyCollectionId = async (collectionId: string) => {
+	const entries = (await invoke('list_fs_entries_by_collection_id', {
+		collectionId
+	})) as FsEntries;
+
+	return entries;
+};
+
+export const generateMissingThumbnails = async (sourceId: string) => {
 	return (await invoke('generate_missing_thumbnails', {
 		sourceId
 	})) as number;
 };
 
-export const list_by_tags = async (includes: string[], excludes: string[]) => {
+export const listByTags = async (includes: string[], excludes: string[]) => {
 	const entries = (await invoke('list_fs_entries_by_tags', {
 		includes,
 		excludes

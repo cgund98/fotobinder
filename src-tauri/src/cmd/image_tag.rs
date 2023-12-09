@@ -56,9 +56,9 @@ pub fn delete_image_tag(
 #[tauri::command]
 pub fn assign_image_tags(
     relative_paths: Vec<String>,
-    source_id: &str,
+    source_ids: Vec<String>,
     assignments: TagAssignments,
     handle: tauri::AppHandle,
 ) -> Result<(), AppError> {
-    handle.image_tag_ctrl(|ctrl| ctrl.assign(relative_paths, source_id, assignments))
+    handle.image_tag_ctrl(|ctrl| ctrl.assign(relative_paths, source_ids, assignments))
 }

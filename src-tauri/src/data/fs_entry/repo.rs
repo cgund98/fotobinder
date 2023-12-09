@@ -207,6 +207,47 @@ impl Repo {
         Ok(entries)
     }
 
+    pub fn list_by_collection_id(
+        &self,
+        collection_id: &str,
+    ) -> Result<Vec<entity::FsEntry>, crate::errors::AppError> {
+        let pool = self.pool.get().unwrap();
+        let mut stmt = pool.prepare(
+            "SELECT fe.* \
+            FROM fs_entries fe \
+            INNER JOIN collection_images ci \
+                ON fe.relative_path = ci.relative_path \
+                AND fe.source_id = ci.source_id \
+            WHERE ci.collection_id = ?1;",
+        )?;
+
+        // Map results
+        let ent_iter = stmt.query_map([collection_id], |row| {
+            Ok(entity::DbFsEntry {
+                relative_path: row.get(0)?,
+                base_path: row.get(1)?,
+                source_id: row.get(2)?,
+                fs_type: row.get(3)?,
+                hidden: row.get(4)?,
+                sha256: row.get(5)?,
+                image_type: row.get(6)?,
+                thumbnail_path: row.get(7)?,
+                thumbnail_generating: row.get(8)?,
+                additional_fields: row.get(9)?,
+            })
+        })?;
+
+        let mut entries: Vec<entity::FsEntry> = Vec::new();
+
+        for db_entry in ent_iter {
+            let entry = entity::FsEntry::from(db_entry.unwrap());
+
+            entries.push(entry);
+        }
+
+        Ok(entries)
+    }
+
     pub fn list_by_tags(
         &self,
         includes: Vec<String>,

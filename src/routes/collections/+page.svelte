@@ -1,20 +1,26 @@
 <script lang="ts">
+	import { listByParentId } from '$lib/api/collection';
 	import Button, { Variant } from '$lib/components/button/Button.svelte';
 	import NewCollectionModal from '$lib/components/collections/NewCollectionModal.svelte';
 	import Separator from '$lib/components/decoration/Separator.svelte';
 	import ChevronDown from '$lib/components/icons/ChevronDown.svelte';
 	import FolderCard from '$lib/components/library/folder/FolderCard.svelte';
 	import PathHeader from '$lib/components/library/header/PathHeader.svelte';
+	import { routeToPage } from '$lib/nav/route';
+	import { catchBad } from '$lib/store/alerts';
 
-	const folders = [
-		{ name: 'Collection' },
-		{ name: 'Collection1 with an extra long name' },
-		{ name: 'Collection2' },
-		{ name: 'Collection3' },
-		{ name: 'Collection4' },
-		{ name: 'Collection5' },
-		{ name: 'Collection6' }
-	];
+	let folders: { id: string; name: string }[] = [];
+
+	const fetchCollections = () => {
+		const doFn = async () => {
+			const res = await listByParentId(null);
+			folders = res.collections.map((col) => ({ id: col.id, name: col.name }));
+		};
+
+		doFn().catch(catchBad);
+	};
+
+	fetchCollections();
 
 	let showNewCollection = false;
 </script>
@@ -36,20 +42,24 @@
 <Separator className="my-2" />
 
 <div class="w-full flex flex-wrap">
-	<div class="w-1/2 sm:w-1/3 md:w-1/4 xl:w-1/5 2xl:w-1/6 p-2">
-		<FolderCard name="Create Collection" add />
-	</div>
 	{#each folders as folder}
 		<div class="w-1/2 sm:w-1/3 md:w-1/4 xl:w-1/5 2xl:w-1/6 p-2">
-			<FolderCard name={folder.name} />
+			<FolderCard
+				name={folder.name}
+				onDoubleClick={() => routeToPage(`/collections/${folder.id}`)}
+			/>
 		</div>
 	{/each}
+	<div class="w-1/2 sm:w-1/3 md:w-1/4 xl:w-1/5 2xl:w-1/6 p-2">
+		<FolderCard name="New Collection" add onClick={() => (showNewCollection = true)} />
+	</div>
 </div>
 
 {#if showNewCollection}
 	<NewCollectionModal
 		onClose={() => {
 			showNewCollection = false;
+			fetchCollections();
 		}}
 	/>
 {/if}

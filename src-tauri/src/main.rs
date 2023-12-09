@@ -17,6 +17,7 @@ async fn main() {
             cmd::fs_entry::list_fs_entries_by_source_id,
             cmd::fs_entry::generate_missing_thumbnails,
             cmd::fs_entry::list_fs_entries_by_tags,
+            cmd::fs_entry::list_fs_entries_by_collection_id,
             cmd::tag::create_tag,
             cmd::tag::get_tag,
             cmd::tag::delete_tag,
@@ -33,6 +34,18 @@ async fn main() {
             cmd::image_tag::list_image_tags_by_relative_path,
             cmd::image_tag::delete_image_tag,
             cmd::image_tag::assign_image_tags,
+            cmd::collection::create_collection,
+            cmd::collection::get_collection,
+            cmd::collection::list_collections,
+            cmd::collection::list_collections_by_parent_id,
+            cmd::collection::delete_collection,
+            cmd::collection_image::create_collection_image,
+            cmd::collection_image::get_collection_image,
+            cmd::collection_image::list_collection_images,
+            cmd::collection_image::list_collection_images_by_relative_path,
+            cmd::collection_image::delete_collection_image,
+            cmd::collection_image::delete_many_collection_images,
+            cmd::collection_image::assign_many_collection_images,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -24,9 +24,10 @@
 
 	export let onClose: () => void = () => {};
 
-	export let sourceId: string;
-	export let selectedImages: Set<string> = new Set();
-	export let selectedFolders: Set<string> = new Set();
+	export let relativePaths: string[];
+	export let sourceIds: string[];
+	export let isImage: boolean;
+
 	let showNewTag = false;
 
 	let tags = writable<TagsState>({});
@@ -80,9 +81,6 @@
 
 	$: filterSearch(search);
 
-	$: console.log($filteredTagsBlock);
-	$: console.log($tagsBlock);
-
 	// 🤨🤨 - I know this is kind of spaghetti but it works
 	const refreshTags = () => {
 		const doFn = async () => {
@@ -95,22 +93,22 @@
 
 			// Fetch current tags for all selected elements
 			let tagFreqs: { [key: string]: number } = {};
-			if (selectedImages.size > 0) {
-				for (var relPath of selectedImages) {
-					const { image_tags } = await listByRelativePath(relPath, sourceId);
+			if (isImage) {
+				for (var [idx, relPath] of relativePaths.entries()) {
+					const { image_tags } = await listByRelativePath(relPath, sourceIds[idx]);
 					image_tags.forEach(
 						(t) => (tagFreqs[t.tag_id] = tagFreqs[t.tag_id] ? tagFreqs[t.tag_id] + 1 : 1)
 					);
 				}
 			} else {
-				for (var basePath of selectedFolders) {
-					const { path_tags } = await listByBasePath(basePath, sourceId);
+				for (var [idx, basePath] of relativePaths.entries()) {
+					const { path_tags } = await listByBasePath(basePath, sourceIds[idx]);
 					path_tags.forEach(
 						(t) => (tagFreqs[t.tag_id] = tagFreqs[t.tag_id] ? tagFreqs[t.tag_id] + 1 : 1)
 					);
 				}
 			}
-			const selSize = selectedImages.size ? selectedImages.size : selectedFolders.size;
+			const selSize = relativePaths.length;
 			Object.entries(tagFreqs).forEach(([id, count]) => {
 				state[id] = { checked: true, partial: count != selSize, name: state[id]?.name };
 			});
@@ -142,14 +140,14 @@
 		const doFn = async () => {
 			let added = 0;
 			let removed = 0;
-			if (selectedImages.size > 0) {
+			if (isImage) {
 				const assignments: TagAssignments = {
 					add: Object.keys($tags).filter((t) => $tags[t] && $tags[t].checked && !$tags[t].partial),
 					remove: Object.keys($tags).filter(
 						(t) => $tags[t] && !$tags[t].checked && !$tags[t].partial
 					)
 				};
-				await assignImageTags([...selectedImages], sourceId, assignments);
+				await assignImageTags(relativePaths, sourceIds, assignments);
 				added = assignments.add.length;
 				removed = assignments.add.length;
 			} else {
@@ -159,7 +157,7 @@
 						(t) => $tags[t] && !$tags[t].checked && !$tags[t].partial
 					)
 				};
-				await assignPathTags([...selectedFolders], sourceId, assignments);
+				await assignPathTags(relativePaths, sourceIds, assignments);
 				added = assignments.add.length;
 				removed = assignments.add.length;
 			}

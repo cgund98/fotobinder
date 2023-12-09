@@ -13,6 +13,7 @@
 	let hovered = false;
 
 	$: eitherHover = hovered || forceHover;
+	$: handleBgClick = forceHover ? () => onChange(!checked) : onView;
 </script>
 
 <div
@@ -28,8 +29,7 @@
 	>
 		<button
 			class="h-full w-full bg-no-repeat bg-center absolute top-0 opacity-0"
-			on:click={onView}
-			disabled={forceHover}
+			on:click={handleBgClick}
 		/>
 		<div class="px-2 py-2 w-full flex flex-row justify-between">
 			<div>
@@ -50,8 +50,7 @@
 	</div>
 	<button
 		class="h-full w-full bg-no-repeat bg-center absolute top-0 z-20 opacity-0"
-		on:click={onView}
-		disabled={forceHover}
+		on:click={handleBgClick}
 	/>
 	<div class="h-full w-full image-card bg-cover bg-no-repeat bg-center absolute top-0 z-10" />
 	<div class="h-full w-full absolute top-0 z-0 flex bg-gray-900 justify-around">

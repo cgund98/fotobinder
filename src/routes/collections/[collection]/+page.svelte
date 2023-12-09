@@ -21,21 +21,17 @@
 
 	import type { PageData } from './$types';
 	import { catchBad, good } from '$lib/store/alerts';
-	import { scan, get as getSource, type Source } from '$lib/api/source';
-	import { FileType, generateMissingThumbnails, listBySourceId } from '$lib/api/fs_entry';
 	import Menu from '$lib/components/menu/Menu.svelte';
 	import FolderSolid from '$lib/components/icons/FolderSolid.svelte';
-	import Reset from '$lib/components/icons/Reset.svelte';
 	import { routeToPage } from '$lib/nav/route';
+	import { get, listByParentId } from '$lib/api/collection';
+	import { FileType, listbyCollectionId } from '$lib/api/fs_entry';
 
 	// Read inputs
 	export let data: PageData;
 
-	$: subpath = $page.url.searchParams.get('subpath') || '';
-
 	interface Folder {
 		id: string;
-		relativePath: string;
 		name: string;
 	}
 	interface Image {
@@ -53,52 +49,28 @@
 	// Fetch entries
 	const folders = writable<Folder[]>([]);
 	const images = writable<Image[]>([]);
-	const source = writable<Source>();
 	const navEntries = writable<HeaderEntry[]>([]);
 
-	const updateNav = () => {
-		let parts = subpath.split(path.sep);
+	const updateNav = async (collectionId: string) => {
+		let entries: HeaderEntry[] = [];
+		let pId: string | null = collectionId;
+		do {
+			let col = await get(pId);
+			entries = [{ label: col.name, route: `/collections/${col.id}` }, ...entries];
+			pId = col.parent_id;
+		} while (pId !== null);
 
-		let partsPaths = parts.map((_, idx) => parts.slice(0, idx + 1).join(path.sep));
-
-		navEntries.set([
-			{ label: 'My Library', route: '/library' },
-			{ label: $source.name, route: `/library/${$source.id}` },
-			...partsPaths
-				.filter((p) => p)
-				.map((p, idx) => ({
-					label: parts[idx],
-					route: `/library/${$source.id}`,
-					queryParams: { subpath: p }
-				}))
-		]);
+		navEntries.set([{ label: 'My Collections', route: '/collections' }, ...entries]);
 	};
 
-	// Fetch data
-	const fetchSource = () => {
-		getSource(data.sourceId)
-			.then((res) => {
-				source.set(res);
-				updateNav();
-			})
-			.catch(catchBad);
-	};
-
-	const fetchEntries = (subpath: string) => {
+	const fetchEntries = (collectionId: string) => {
 		const doFn = async () => {
-			const res = await listBySourceId(data.sourceId, subpath);
+			const subcollections = await listByParentId(collectionId);
 
-			// Parse folderslistBySourceid
-			const newFolders = res.entries
-				.filter((e) => e.fs_type == FileType.Directory)
-				.map((e) => {
-					let parts = e.relative_path.split(path.sep);
-					return {
-						name: parts[parts.length - 1],
-						id: e.relative_path,
-						relativePath: e.relative_path
-					};
-				});
+			// Parse folders
+			const newFolders = subcollections.collections.map((e) => {
+				return { name: e.name, id: e.id };
+			});
 
 			// Filter selection
 			let folderIds = newFolders.reduce((s, i) => s.add(i.id), new Set<String>());
@@ -113,6 +85,7 @@
 			};
 
 			// Parse images
+			const res = await listbyCollectionId(collectionId);
 			const newImages = await Promise.all(
 				res.entries
 					.filter((e) => e.fs_type == FileType.File)
@@ -128,21 +101,16 @@
 					})
 			);
 
-			// Filter selection
-			let imageIds = newImages.reduce((s, i) => s.add(i.id), new Set<String>());
-			selectedImages = new Set(...Object.keys(selectedImages).filter((i) => imageIds.has(i)));
-
 			// Update values
 			folders.set(newFolders);
 			images.set(newImages);
-			updateNav();
+			await updateNav(collectionId);
 		};
 		doFn().catch(catchBad);
 	};
 
 	// Initialize fields
-	$: fetchSource();
-	$: fetchEntries(subpath);
+	$: fetchEntries(data.collectionId);
 	$: imagesSelected = selectedImages.size > 0;
 	$: foldersSelected = $selectedFolders.size > 0;
 	$: noSelection = !imagesSelected && !foldersSelected;
@@ -153,38 +121,7 @@
 			label: 'Add to Collection',
 			icon: FolderSolid,
 			action: () => (showAddToCollection = true),
-			disabled: noSelection
-		},
-		{
-			label: 'Scan for Files',
-			icon: Reset,
-			action: () =>
-				scan(data.sourceId)
-					.then((res) => {
-						let msg = `Found ${res.entries_created} new entries and \
-							deleted ${res.entries_deleted} outdated entries.`;
-
-						if (res.thumbnails_created)
-							msg += ` Generating ${res.thumbnails_created} \
-							thumbnails in the background...`;
-						good(msg);
-						fetchEntries(subpath);
-					})
-					.catch(catchBad),
-			disabled: false
-		},
-		{
-			label: 'Fix Thumbnails',
-			icon: Photo,
-			action: () => {
-				generateMissingThumbnails(data.sourceId)
-					.then((res) => {
-						if (res > 0) good(`Generating ${res} missing thumbnails in background...`);
-						else good(`Found no missing thumbnails!`);
-					})
-					.catch(catchBad);
-			},
-			disabled: false
+			disabled: !imagesSelected
 		}
 	];
 
@@ -193,9 +130,8 @@
 	let showImageDetails = false;
 	let showAddToCollection = false;
 
-	$: relativePaths = imagesSelected
-		? $images.filter((i) => selectedImages.has(i.id)).map((i) => i.relativePath)
-		: $folders.filter((i) => $selectedFolders.has(i.id)).map((i) => i.relativePath);
+	$: relativePaths = $images.filter((i) => selectedImages.has(i.id)).map((i) => i.relativePath);
+	$: sourceIds = $images.filter((i) => selectedImages.has(i.id)).map((i) => i.sourceId);
 </script>
 
 <PathHeader bind:path={$navEntries} />
@@ -231,7 +167,7 @@
 			onClick={() => {
 				showEditTags = true;
 			}}
-			disabled={noSelection}
+			disabled={!imagesSelected}
 		>
 			<Tag className="w-[15px] -mt-[1px]" />
 		</Button>
@@ -260,8 +196,10 @@
 					selectedImages = new Set();
 				}}
 				active={$selectedFolders.has(folder.id)}
-				onDoubleClick={() =>
-					routeToPage(`/library/${data.sourceId}`, { subpath: path.join(subpath, folder.name) })}
+				onDoubleClick={() => {
+					console.log(`/collections/${folder.id}`);
+					routeToPage(`/collections/${folder.id}`);
+				}}
 			/>
 		</div>
 	{/each}
@@ -295,17 +233,6 @@
 	{/each}
 </div>
 
-{#if showEditTags}
-	<EditTagsModal
-		{relativePaths}
-		sourceIds={$images.filter((i) => selectedImages.has(i.id)).map((i) => i.sourceId)}
-		isImage={imagesSelected}
-		onClose={() => {
-			showEditTags = false;
-		}}
-	/>
-{/if}
-
 {#if showImageDetails}
 	<ImageDetailsCard
 		onClose={() => {
@@ -322,6 +249,17 @@
 		sourceIds={$images.filter((i) => selectedImages.has(i.id)).map((i) => i.sourceId)}
 		onClose={() => {
 			showAddToCollection = false;
+		}}
+	/>
+{/if}
+
+{#if showEditTags}
+	<EditTagsModal
+		{relativePaths}
+		{sourceIds}
+		isImage
+		onClose={() => {
+			showEditTags = false;
 		}}
 	/>
 {/if}

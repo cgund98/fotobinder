@@ -46,12 +46,12 @@ export const remove = async (id: string): Promise<PathTag> => {
 
 export const assign = async (
 	basePaths: string[],
-	sourceId: string,
+	sourceIds: string[],
 	assignments: TagAssignments
 ) => {
 	await invoke('assign_path_tags', {
 		basePaths,
-		sourceId,
+		sourceIds,
 		assignments
 	});
 };

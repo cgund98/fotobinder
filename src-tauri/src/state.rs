@@ -19,6 +19,8 @@ pub struct AppState {
     pub tag_controller: Mutex<Option<biz::tag::Controller>>,
     pub path_tag_controller: Mutex<Option<biz::path_tag::Controller>>,
     pub image_tag_controller: Mutex<Option<biz::image_tag::Controller>>,
+    pub collection_controller: Mutex<Option<biz::collection::Controller>>,
+    pub collection_image_controller: Mutex<Option<biz::collection_image::Controller>>,
 }
 
 // Implement convenience traits
@@ -42,6 +44,14 @@ pub trait ServiceAccess {
     fn image_tag_ctrl<F, TResult>(&self, operation: F) -> TResult
     where
         F: FnOnce(&biz::image_tag::Controller) -> TResult;
+
+    fn collection_ctrl<F, TResult>(&self, operation: F) -> TResult
+    where
+        F: FnOnce(&biz::collection::Controller) -> TResult;
+
+    fn collection_image_ctrl<F, TResult>(&self, operation: F) -> TResult
+    where
+        F: FnOnce(&biz::collection_image::Controller) -> TResult;
 }
 
 impl ServiceAccess for AppHandle {
@@ -95,6 +105,28 @@ impl ServiceAccess for AppHandle {
     {
         let app_state: State<AppState> = tauri::Manager::state(self);
         let binding = app_state.image_tag_controller.lock().unwrap();
+        let ctrl = binding.as_ref().unwrap();
+
+        operation(ctrl)
+    }
+
+    fn collection_ctrl<F, TResult>(&self, operation: F) -> TResult
+    where
+        F: FnOnce(&biz::collection::Controller) -> TResult,
+    {
+        let app_state: State<AppState> = tauri::Manager::state(self);
+        let binding = app_state.collection_controller.lock().unwrap();
+        let ctrl = binding.as_ref().unwrap();
+
+        operation(ctrl)
+    }
+
+    fn collection_image_ctrl<F, TResult>(&self, operation: F) -> TResult
+    where
+        F: FnOnce(&biz::collection_image::Controller) -> TResult,
+    {
+        let app_state: State<AppState> = tauri::Manager::state(self);
+        let binding = app_state.collection_image_controller.lock().unwrap();
         let ctrl = binding.as_ref().unwrap();
 
         operation(ctrl)

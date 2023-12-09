@@ -61,12 +61,12 @@ export const remove = async (
 
 export const assign = async (
 	relativePaths: string[],
-	sourceId: string,
+	sourceIds: string[],
 	assignments: TagAssignments
 ) => {
 	await invoke('assign_image_tags', {
 		relativePaths,
-		sourceId,
+		sourceIds,
 		assignments
 	});
 };

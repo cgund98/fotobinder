@@ -56,9 +56,7 @@
 	];
 
 	let rules: SearchRule[] = load();
-	if (rules.length == 0) [{ id: v4(), ruleType: ruleTypeOptions[0].value }];
-
-	$: console.log(load());
+	if (rules.length === 0) rules = [{ id: v4(), ruleType: ruleTypeOptions[0].value }];
 
 	// let additionalOptions = {
 	// 	overlapIncluded: { label: 'Included tags intersect one another', value: false }

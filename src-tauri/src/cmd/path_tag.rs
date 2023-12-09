@@ -54,9 +54,9 @@ pub fn delete_path_tag(
 #[tauri::command]
 pub fn assign_path_tags(
     base_paths: Vec<String>,
-    source_id: &str,
+    source_ids: Vec<String>,
     assignments: TagAssignments,
     handle: tauri::AppHandle,
 ) -> Result<(), AppError> {
-    handle.path_tag_ctrl(|ctrl| ctrl.assign(base_paths, source_id, assignments))
+    handle.path_tag_ctrl(|ctrl| ctrl.assign(base_paths, source_ids, assignments))
 }

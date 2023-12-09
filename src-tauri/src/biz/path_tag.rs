@@ -66,10 +66,12 @@ impl Controller {
     pub fn assign(
         &self,
         base_paths: Vec<String>,
-        source_id: &str,
+        source_ids: Vec<String>,
         assignments: api::image_tag::TagAssignments,
     ) -> Result<(), AppError> {
-        for base_path in base_paths.iter() {
+        for (idx, base_path) in base_paths.iter().enumerate() {
+            let source_id = source_ids.get(idx).unwrap();
+
             // Ensure path exists
             self.fs_repo.get_by_ids(base_path, source_id)?;
 

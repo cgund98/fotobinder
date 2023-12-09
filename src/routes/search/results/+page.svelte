@@ -12,14 +12,16 @@
 	import AddToCollectionModal from '$lib/components/collections/AddToCollectionModal.svelte';
 	import Separator from '$lib/components/decoration/Separator.svelte';
 	import { load } from '$lib/store/search';
-	import { list_by_tags } from '$lib/api/fs_entry';
+	import { listByTags } from '$lib/api/fs_entry';
 	import path from 'path-browserify';
 	import ImageCard from '$lib/components/library/image/ImageCard.svelte';
 	import { appDataDir, join } from '@tauri-apps/api/path';
 	import { convertFileSrc } from '@tauri-apps/api/tauri';
 
-	interface Images {
+	interface Image {
 		id: string;
+		relativePath: string;
+		sourceId: string;
 		name: string;
 		src: string;
 	}
@@ -28,7 +30,7 @@
 	let selectedImages = new Set<string>();
 
 	// Fetch entries
-	const images = writable<Images[]>([]);
+	const images = writable<Image[]>([]);
 
 	$: imagesSelected = selectedImages.size > 0;
 
@@ -60,7 +62,7 @@
 				.map((rule) => rule.tagId || '');
 
 			// Fetch tags
-			const res = await list_by_tags(includes, excludes);
+			const res = await listByTags(includes, excludes);
 
 			console.log(includes, excludes);
 
@@ -75,9 +77,11 @@
 				res.entries.map(async (e) => {
 					const parts = e.relative_path.split(path.sep);
 					return {
-						id: `${e.source_id}/${e.relative_path}`,
 						src: await mapFileSrc(e.thumbnail_path),
-						name: parts[parts.length - 1]
+						id: `${e.source_id}/${e.relative_path}`,
+						name: parts[parts.length - 1],
+						relativePath: e.relative_path,
+						sourceId: e.source_id
 					};
 				})
 			);
@@ -88,6 +92,9 @@
 	};
 
 	fetchResults();
+
+	$: relativePaths = $images.filter((i) => selectedImages.has(i.id)).map((i) => i.relativePath);
+	$: sourceIds = $images.filter((i) => selectedImages.has(i.id)).map((i) => i.sourceId);
 </script>
 
 <PathHeader
@@ -156,6 +163,8 @@
 
 {#if showAddToCollection}
 	<AddToCollectionModal
+		{relativePaths}
+		{sourceIds}
 		onClose={() => {
 			showAddToCollection = false;
 		}}

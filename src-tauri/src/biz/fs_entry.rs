@@ -220,6 +220,13 @@ impl Controller {
         self.repo.list_by_source_id(source_id)
     }
 
+    pub fn list_by_collection_id(
+        &self,
+        collection_id: &str,
+    ) -> Result<Vec<entity::FsEntry>, AppError> {
+        self.repo.list_by_collection_id(collection_id)
+    }
+
     pub fn list_by_tags(
         &self,
         includes: Vec<String>,

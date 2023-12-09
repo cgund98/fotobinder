@@ -29,13 +29,6 @@
 
 	// Build search options
 	const buildOptions = (tags: Tag[]) => {
-		const map = tags.reduce(
-			(cur, prev) => {
-				cur[prev.id] = prev.name;
-				return cur;
-			},
-			{} as { [id: string]: string }
-		);
 		const options = tags
 			.filter((tag) => tag.parent_id === null)
 			.map((tag) => ({
