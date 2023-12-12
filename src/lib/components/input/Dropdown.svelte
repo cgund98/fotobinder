@@ -1,5 +1,7 @@
 <script lang="ts">
+	import { scale } from 'svelte/transition';
 	import ChevronDown from '../icons/ChevronDown.svelte';
+	import { quintOut } from 'svelte/easing';
 
 	export let className: string = '';
 	export let label: string = '';
@@ -37,7 +39,8 @@
 
 		{#if open}
 			<div
-				class="z-10 inset-x-0 text-base list-none bg-gray-800 rounded-lg divide-y divide-gray-100 shadow-xl absolute my-2 max-h-32 overflow-y-scroll"
+				transition:scale={{ duration: 200, easing: quintOut }}
+				class="z-10 inset-x-0 border-2 border-gray-700 text-base list-none bg-gray-800 rounded-lg divide-y divide-gray-100 shadow-xl absolute my-2 max-h-32 overflow-y-scroll"
 			>
 				<ul class="">
 					{#each options as option}

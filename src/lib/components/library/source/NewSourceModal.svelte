@@ -13,6 +13,9 @@
 	import Modal from '../../layout/Modal.svelte';
 	import Close from '../../icons/Close.svelte';
 	import { catchBad, good } from '../../../store/alerts';
+	import ProgressWrapper from '$lib/components/progress/ProgressWrapper.svelte';
+
+	let loading = false;
 
 	export let onClose: (source?: Source) => void = () => {};
 
@@ -23,6 +26,7 @@
 	let type: string = typeOptions[0].value;
 
 	const handleSubmit = async () => {
+		loading = true;
 		try {
 			const source = await create(name, type, path);
 			let scanRes = await scan(source.id);
@@ -33,6 +37,7 @@
 		} catch (err: any) {
 			catchBad(err);
 		}
+		loading = false;
 	};
 
 	// Validate inputs
@@ -62,6 +67,7 @@
 				icon={Close}
 				variant={IconVariant.Embedded}
 				label="Close Window"
+				disabled={loading}
 			/>
 		</div>
 	</div>
@@ -88,12 +94,23 @@
 	<div class="w-full flex flex-row justify-between content-bottom mt-4">
 		<div class="flex flex-col justify-between"></div>
 		<div class="flex space-x-4">
-			<Button onClick={() => onClose()} variant={Variant.Warn} title="Discard">
+			<Button onClick={() => onClose()} disabled={loading} variant={Variant.Warn} title="Discard">
 				<Trash className="w-[16px] h-full" />
 			</Button>
-			<Button onClick={handleSubmit} variant={Variant.Primary} title="Add Source" disabled={!valid}>
+			<Button
+				onClick={() => {
+					if (!loading) handleSubmit();
+				}}
+				variant={Variant.Primary}
+				title="Add Source"
+				disabled={!valid}
+			>
 				<FolderSolid className="w-[16px] -mt-[1px]" />
 			</Button>
 		</div>
 	</div>
 </Modal>
+
+{#if loading}
+	<ProgressWrapper />
+{/if}

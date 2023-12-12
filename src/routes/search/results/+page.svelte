@@ -17,6 +17,7 @@
 	import ImageCard from '$lib/components/library/image/ImageCard.svelte';
 	import { appDataDir, join } from '@tauri-apps/api/path';
 	import { convertFileSrc } from '@tauri-apps/api/tauri';
+	import PageTransitionWrapper from '$lib/components/layout/PageTransitionWrapper.svelte';
 
 	interface Image {
 		id: string;
@@ -97,59 +98,63 @@
 	$: sourceIds = $images.filter((i) => selectedImages.has(i.id)).map((i) => i.sourceId);
 </script>
 
-<PathHeader
-	path={[
-		{ label: 'Query Builder', route: '/search' },
-		{ label: 'Results', route: '/search/results' }
-	]}
-/>
+<PageTransitionWrapper>
+	<PathHeader
+		path={[
+			{ label: 'Query Builder', route: '/search' },
+			{ label: 'Results', route: '/search/results' }
+		]}
+	/>
 
-<div class="flex justify-between pb-1 px-2">
-	<div class="flex flex-col justify-end">
-		<p class="text-gray-500 text-base">
-			{#if !imagesSelected}
-				{$images.length} images found.
-				<button
-					class="text-teal-400 font-medium ml-2"
-					on:click={() => (selectedImages = new Set($images.map((i) => i.id)))}>Select all</button
-				>
-			{:else}
-				{selectedImages.size}/{$images.length} images selected.
-				<button class="text-teal-400 font-medium ml-2" on:click={() => (selectedImages = new Set())}
-					>Deselect all
-				</button>
-			{/if}
-		</p>
-	</div>
-
-	<div class="flex flex-row space-x-3 items-center">
-		<Menu label="Actions" options={menuOptions} position="right" />
-	</div>
-</div>
-
-<Separator className="my-2" />
-
-<div class="w-full flex flex-wrap mt-1">
-	{#each $images as image (image.id)}
-		<div class="w-1/2 sm:w-1/3 md:w-1/4 xl:w-1/5 2xl:w-1/6 p-1">
-			<ImageCard
-				onChange={(checked) => {
-					if (checked) selectedImages = selectedImages.add(image.id);
-					else selectedImages.delete(image.id);
-
-					selectedImages = selectedImages;
-				}}
-				onView={() => {
-					showImageDetails = true;
-				}}
-				forceHover={imagesSelected}
-				checked={selectedImages.has(image.id)}
-				name={image.name}
-				--src="url('{image.src}')"
-			/>
+	<div class="flex justify-between pb-1 px-2">
+		<div class="flex flex-col justify-end">
+			<p class="text-gray-500 text-base">
+				{#if !imagesSelected}
+					{$images.length} images found.
+					<button
+						class="text-teal-400 font-medium ml-2"
+						on:click={() => (selectedImages = new Set($images.map((i) => i.id)))}>Select all</button
+					>
+				{:else}
+					{selectedImages.size}/{$images.length} images selected.
+					<button
+						class="text-teal-400 font-medium ml-2"
+						on:click={() => (selectedImages = new Set())}
+						>Deselect all
+					</button>
+				{/if}
+			</p>
 		</div>
-	{/each}
-</div>
+
+		<div class="flex flex-row space-x-3 items-center">
+			<Menu label="Actions" options={menuOptions} position="right" />
+		</div>
+	</div>
+
+	<Separator className="my-2" />
+
+	<div class="w-full flex flex-wrap mt-1">
+		{#each $images as image (image.id)}
+			<div class="w-1/2 sm:w-1/3 md:w-1/4 xl:w-1/5 2xl:w-1/6 p-1">
+				<ImageCard
+					onChange={(checked) => {
+						if (checked) selectedImages = selectedImages.add(image.id);
+						else selectedImages.delete(image.id);
+
+						selectedImages = selectedImages;
+					}}
+					onView={() => {
+						showImageDetails = true;
+					}}
+					forceHover={imagesSelected}
+					checked={selectedImages.has(image.id)}
+					name={image.name}
+					--src="url('{image.src}')"
+				/>
+			</div>
+		{/each}
+	</div>
+</PageTransitionWrapper>
 
 {#if showImageDetails}
 	<ImageDetailsCard

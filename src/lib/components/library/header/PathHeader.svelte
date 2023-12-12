@@ -22,7 +22,10 @@
 		{#each active_path as part, i}
 			<button
 				class="text-gray-100 text-xl font-bold mx-2 mt-[1px]"
-				on:click={() => routeToPage(part.route, part.queryParams)}>{part.label}</button
+				on:click={() => {
+					routeToPage(part.route, part.queryParams);
+					if (part.afterRoute) part.afterRoute();
+				}}>{part.label}</button
 			>
 			{#if i != active_path.length - 1}
 				<ChevronDown className="-rotate-90 text-gray-600 w-4 h-full" />

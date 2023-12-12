@@ -27,6 +27,7 @@
 	import FolderSolid from '$lib/components/icons/FolderSolid.svelte';
 	import Reset from '$lib/components/icons/Reset.svelte';
 	import { routeToPage } from '$lib/nav/route';
+	import PageTransitionWrapper from '$lib/components/layout/PageTransitionWrapper.svelte';
 
 	// Read inputs
 	export let data: PageData;
@@ -63,25 +64,28 @@
 
 		navEntries.set([
 			{ label: 'My Library', route: '/library' },
-			{ label: $source.name, route: `/library/${$source.id}` },
+			{ label: $source.name, route: `/library/${$source.id}`, afterRoute: () => fetchSource() },
 			...partsPaths
 				.filter((p) => p)
 				.map((p, idx) => ({
 					label: parts[idx],
 					route: `/library/${$source.id}`,
-					queryParams: { subpath: p }
+					queryParams: { subpath: p },
+					afterRoute: () => fetchSource()
 				}))
 		]);
 	};
 
 	// Fetch data
 	const fetchSource = () => {
-		getSource(data.sourceId)
-			.then((res) => {
-				source.set(res);
-				updateNav();
-			})
-			.catch(catchBad);
+		const doFn = async () => {
+			const res = await getSource(data.sourceId);
+			source.set(res);
+			updateNav();
+			fetchEntries(subpath);
+		};
+
+		doFn().catch(catchBad);
 	};
 
 	const fetchEntries = (subpath: string) => {
@@ -141,8 +145,7 @@
 	};
 
 	// Initialize fields
-	$: fetchSource();
-	$: fetchEntries(subpath);
+	fetchSource();
 	$: imagesSelected = selectedImages.size > 0;
 	$: foldersSelected = $selectedFolders.size > 0;
 	$: noSelection = !imagesSelected && !foldersSelected;
@@ -198,102 +201,108 @@
 		: $folders.filter((i) => $selectedFolders.has(i.id)).map((i) => i.relativePath);
 </script>
 
-<PathHeader bind:path={$navEntries} />
+<PageTransitionWrapper>
+	<PathHeader bind:path={$navEntries} />
 
-<div class="flex justify-between pb-1 px-2">
-	<div class="flex flex-col justify-end">
-		<p class="text-gray-500 text-base">
-			{#if noSelection}
-				No items selected. <button
-					class="text-teal-400 font-medium ml-2"
-					on:click={() => (selectedImages = new Set($images.map((i) => i.id)))}>Select all</button
-				>
-			{:else if foldersSelected}
-				{$selectedFolders.size} folders selected.
-				<button
-					class="text-teal-400 font-medium ml-2"
-					on:click={() => selectedFolders.set(new Set())}
-					>Deselect all
-				</button>
-			{:else if imagesSelected}
-				{selectedImages.size} images selected.
-				<button class="text-teal-400 font-medium ml-2" on:click={() => (selectedImages = new Set())}
-					>Deselect all
-				</button>
-			{/if}
-		</p>
-	</div>
+	<div class="flex justify-between pb-1 px-2">
+		<div class="flex flex-col justify-end">
+			<p class="text-gray-500 text-base">
+				{#if noSelection}
+					No items selected. <button
+						class="text-teal-400 font-medium ml-2"
+						on:click={() => (selectedImages = new Set($images.map((i) => i.id)))}>Select all</button
+					>
+				{:else if foldersSelected}
+					{$selectedFolders.size} folders selected.
+					<button
+						class="text-teal-400 font-medium ml-2"
+						on:click={() => selectedFolders.set(new Set())}
+						>Deselect all
+					</button>
+				{:else if imagesSelected}
+					{selectedImages.size} images selected.
+					<button
+						class="text-teal-400 font-medium ml-2"
+						on:click={() => (selectedImages = new Set())}
+						>Deselect all
+					</button>
+				{/if}
+			</p>
+		</div>
 
-	<div class="flex flex-row space-x-3 items-center">
-		<Button
-			title="Modify Tags"
-			className="disabled:bg-teal-700"
-			onClick={() => {
-				showEditTags = true;
-			}}
-			disabled={noSelection}
-		>
-			<Tag className="w-[15px] -mt-[1px]" />
-		</Button>
-		<Menu label="Actions" options={menuOptions} position="right" />
-	</div>
-</div>
-
-<Separator className="my-2" />
-
-{#if $folders.length === 0 && $images.length === 0}
-	<p class="text-left px-2">Folder is empty.</p>
-{/if}
-
-<div class="w-full flex flex-wrap">
-	{#each $folders as folder (folder.id)}
-		<div class="w-1/2 sm:w-1/3 md:w-1/4 xl:w-1/5 2xl:w-1/6 p-2">
-			<FolderCard
-				name={folder.name}
+		<div class="flex flex-row space-x-3 items-center">
+			<Button
+				title="Modify Tags"
+				className="disabled:bg-teal-700"
 				onClick={() => {
-					selectedFolders.update((s) => {
-						if (s.has(folder.id)) s.delete(folder.id);
-						else s.add(folder.id);
-
-						return s;
-					});
-					selectedImages = new Set();
+					showEditTags = true;
 				}}
-				active={$selectedFolders.has(folder.id)}
-				onDoubleClick={() =>
-					routeToPage(`/library/${data.sourceId}`, { subpath: path.join(subpath, folder.name) })}
-			/>
+				disabled={noSelection}
+			>
+				<Tag className="w-[15px] -mt-[1px]" />
+			</Button>
+			<Menu label="Actions" options={menuOptions} position="right" />
 		</div>
-	{/each}
-</div>
+	</div>
 
-{#if $images.length && $folders.length}
 	<Separator className="my-2" />
-{/if}
 
-<div class="w-full flex flex-wrap mt-1">
-	{#each $images as image (image.id)}
-		<div class="w-1/2 sm:w-1/3 md:w-1/4 xl:w-1/5 2xl:w-1/6 p-1">
-			<ImageCard
-				onChange={(checked) => {
-					if (checked) selectedImages = selectedImages.add(image.id);
-					else selectedImages.delete(image.id);
+	{#if $folders.length === 0 && $images.length === 0}
+		<p class="text-left px-2">Folder is empty.</p>
+	{/if}
 
-					selectedImages = selectedImages;
-					selectedFolders.set(new Set());
-				}}
-				onView={() => {
-					showImageDetails = true;
-				}}
-				forceHover={imagesSelected}
-				checked={selectedImages.has(image.id)}
-				name={image.name}
-				--src="url('{image.src}')"
-				--color="red"
-			/>
-		</div>
-	{/each}
-</div>
+	<div class="w-full flex flex-wrap">
+		{#each $folders as folder (folder.id)}
+			<div class="w-1/2 sm:w-1/3 md:w-1/4 xl:w-1/5 2xl:w-1/6 p-2">
+				<FolderCard
+					name={folder.name}
+					onClick={() => {
+						selectedFolders.update((s) => {
+							if (s.has(folder.id)) s.delete(folder.id);
+							else s.add(folder.id);
+
+							return s;
+						});
+						selectedImages = new Set();
+					}}
+					active={$selectedFolders.has(folder.id)}
+					onDoubleClick={() => {
+						routeToPage(`/library/${data.sourceId}`, { subpath: path.join(subpath, folder.name) });
+						fetchSource();
+					}}
+				/>
+			</div>
+		{/each}
+	</div>
+
+	{#if $images.length && $folders.length}
+		<Separator className="my-2" />
+	{/if}
+
+	<div class="w-full flex flex-wrap mt-1">
+		{#each $images as image (image.id)}
+			<div class="w-1/2 sm:w-1/3 md:w-1/4 xl:w-1/5 2xl:w-1/6 p-1">
+				<ImageCard
+					onChange={(checked) => {
+						if (checked) selectedImages = selectedImages.add(image.id);
+						else selectedImages.delete(image.id);
+
+						selectedImages = selectedImages;
+						selectedFolders.set(new Set());
+					}}
+					onView={() => {
+						showImageDetails = true;
+					}}
+					forceHover={imagesSelected}
+					checked={selectedImages.has(image.id)}
+					name={image.name}
+					--src="url('{image.src}')"
+					--color="red"
+				/>
+			</div>
+		{/each}
+	</div>
+</PageTransitionWrapper>
 
 {#if showEditTags}
 	<EditTagsModal

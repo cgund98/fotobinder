@@ -25,7 +25,8 @@
 
 	const shadowCSS = shadow ? 'drop-shadow' : '';
 
-	const commonCSS = 'min-h-[28px] min-w-[28px] flex flex-col justify-around rounded-lg';
+	const commonCSS =
+		'min-h-[28px] min-w-[28px] flex flex-col justify-around rounded-lg duration-100 ease-out';
 
 	$: disabledCSS = disabled ? 'opacity-50' : 'opacity-100 hover:text-gray-100';
 </script>

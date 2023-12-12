@@ -13,6 +13,7 @@
 	import { catchBad, good } from '$lib/store/alerts';
 	import Plus from '$lib/components/icons/Plus.svelte';
 	import NewTagModal from '$lib/components/tags/NewTagModal.svelte';
+	import PageTransitionWrapper from '$lib/components/layout/PageTransitionWrapper.svelte';
 
 	let tags = writable<Tag[]>([]);
 
@@ -46,109 +47,111 @@
 	let showNewTag = false;
 </script>
 
-<PathHeader path={[{ label: 'Tags', route: '/tags' }]} />
+<PageTransitionWrapper>
+	<PathHeader path={[{ label: 'Tags', route: '/tags' }]} />
 
-<div class="flex justify-between pb-1 px-2">
-	<div class="flex flex-col justify-end">
-		<p class="text-gray-500 text-base">Manage your library's tags.</p>
-	</div>
-
-	<div class="flex flex-row space-x-3 items-center">
-		<Button title="Add Tag" variant={Variant.Secondary} onClick={() => (showNewTag = true)}>
-			<Plus className="w-[15px] -mt-[1px]" />
-		</Button>
-	</div>
-</div>
-
-<Separator className="my-2" />
-
-<div class="px-2">
-	{#each Object.values(tagsBlock) as { tag, children }, i (tag.id)}
-		<div class="hover:bg-gray-800 rounded flex flex-row align-center w-full justify-between">
-			<div class="flex-grow flex flex-row">
-				<div class="text-left w-8 flex flex-col justify-around">
-					{#if children.length > 0}
-						<IconButton
-							icon={ChevronDown}
-							variant={IconVariant.Embedded}
-							label="Collapse Children"
-						/>
-					{/if}
-				</div>
-				<div class="py-1.5">
-					{tag.name}
-				</div>
-			</div>
-			<div class="flex flex-row justify-end space-x-2">
-				<div class="flex flex-col justify-around">
-					<IconButton icon={Pencil} variant={IconVariant.Embedded} label="Edit Tag" />
-				</div>
-				<div class="flex flex-col justify-around">
-					<IconButton
-						icon={Trash}
-						onClick={() =>
-							remove(tag.id)
-								.then(() => {
-									refreshTags();
-									good(`Deleted tag '${tag.name}'`);
-								})
-								.catch(catchBad)}
-						variant={IconVariant.Embedded}
-						label="Delete Tag"
-					/>
-				</div>
-			</div>
+	<div class="flex justify-between pb-1 px-2">
+		<div class="flex flex-col justify-end">
+			<p class="text-gray-500 text-base">Manage your library's tags.</p>
 		</div>
-		{#if children.length > 0}
-			<Separator className="my-1 opacity-50" />
-			<div class="pl-[13px]">
-				<div class="border-l-2 border-teal-800 pl-2">
-					{#each children as child, idx}
-						<div
-							class="hover:bg-gray-800 rounded pl-6 flex flex-row align-center w-full justify-between"
-						>
-							<div class="flex-grow flex flex-row">
-								<div class="py-1.5">
-									{child.name}
-								</div>
-							</div>
-							<div class="flex flex-row justify-end space-x-2">
-								<div class="flex flex-col justify-around">
-									<IconButton icon={Pencil} variant={IconVariant.Embedded} label="Edit Tag" />
-								</div>
-								<div class="flex flex-col justify-around">
-									<IconButton
-										icon={Trash}
-										onClick={() =>
-											remove(child.id)
-												.then(() => {
-													refreshTags();
-													good(`Deleted tag '${child.name}'`);
-												})
-												.catch(catchBad)}
-										variant={IconVariant.Embedded}
-										label="Delete Tag"
-									/>
-								</div>
-							</div>
-						</div>
-						{#if idx !== children.length - 1}
-							<Separator className="my-1 opacity-50" />
+
+		<div class="flex flex-row space-x-3 items-center">
+			<Button title="Add Tag" variant={Variant.Secondary} onClick={() => (showNewTag = true)}>
+				<Plus className="w-[15px] -mt-[1px]" />
+			</Button>
+		</div>
+	</div>
+
+	<Separator className="my-2" />
+
+	<div class="px-2">
+		{#each Object.values(tagsBlock) as { tag, children }, i (tag.id)}
+			<div class="hover:bg-gray-800 rounded flex flex-row align-center w-full justify-between">
+				<div class="flex-grow flex flex-row">
+					<div class="text-left w-8 flex flex-col justify-around">
+						{#if children.length > 0}
+							<IconButton
+								icon={ChevronDown}
+								variant={IconVariant.Embedded}
+								label="Collapse Children"
+							/>
 						{/if}
-					{/each}
+					</div>
+					<div class="py-1.5">
+						{tag.name}
+					</div>
+				</div>
+				<div class="flex flex-row justify-end space-x-2">
+					<div class="flex flex-col justify-around">
+						<IconButton icon={Pencil} variant={IconVariant.Embedded} label="Edit Tag" />
+					</div>
+					<div class="flex flex-col justify-around">
+						<IconButton
+							icon={Trash}
+							onClick={() =>
+								remove(tag.id)
+									.then(() => {
+										refreshTags();
+										good(`Deleted tag '${tag.name}'`);
+									})
+									.catch(catchBad)}
+							variant={IconVariant.Embedded}
+							label="Delete Tag"
+						/>
+					</div>
 				</div>
 			</div>
-		{/if}
+			{#if children.length > 0}
+				<Separator className="my-1 opacity-50" />
+				<div class="pl-[13px]">
+					<div class="border-l-2 border-teal-800 pl-2">
+						{#each children as child, idx}
+							<div
+								class="hover:bg-gray-800 rounded pl-6 flex flex-row align-center w-full justify-between"
+							>
+								<div class="flex-grow flex flex-row">
+									<div class="py-1.5">
+										{child.name}
+									</div>
+								</div>
+								<div class="flex flex-row justify-end space-x-2">
+									<div class="flex flex-col justify-around">
+										<IconButton icon={Pencil} variant={IconVariant.Embedded} label="Edit Tag" />
+									</div>
+									<div class="flex flex-col justify-around">
+										<IconButton
+											icon={Trash}
+											onClick={() =>
+												remove(child.id)
+													.then(() => {
+														refreshTags();
+														good(`Deleted tag '${child.name}'`);
+													})
+													.catch(catchBad)}
+											variant={IconVariant.Embedded}
+											label="Delete Tag"
+										/>
+									</div>
+								</div>
+							</div>
+							{#if idx !== children.length - 1}
+								<Separator className="my-1 opacity-50" />
+							{/if}
+						{/each}
+					</div>
+				</div>
+			{/if}
 
-		{#if i !== Object.keys(tagsBlock).length - 1}
-			<Separator className="my-1 opacity-50" />
-		{/if}
-	{/each}
-</div>
+			{#if i !== Object.keys(tagsBlock).length - 1}
+				<Separator className="my-1 opacity-50" />
+			{/if}
+		{/each}
+	</div>
 
-{#if $tags.length === 0}
-	<p class="text-left px-2">You have not created any tags yet. Try creating some!</p>
-{/if}
+	{#if $tags.length === 0}
+		<p class="text-left px-2">You have not created any tags yet. Try creating some!</p>
+	{/if}
+</PageTransitionWrapper>
 
 {#if showNewTag}
 	<NewTagModal

@@ -106,12 +106,6 @@ impl Controller {
                 false => entity::FileType::File,
             };
 
-            let full_path = Path::new(root_dir).join(entry.relative_path.clone());
-            let sha256 = match entry.is_dir {
-                true => String::from(""),
-                false => image::hash(&full_path)?,
-            };
-
             let mut e = entity::FsEntry {
                 base_path: entry.base_path,
                 relative_path: entry.relative_path,
@@ -138,8 +132,7 @@ impl Controller {
             let th_path_str = String::from(th_path.to_string_lossy());
             let dest_path = image::gen_thumbnail_path(&th_path, thumbnails_path);
             let dest_path_str = String::from(dest_path.to_string_lossy());
-            if e.fs_type == entity::FileType::File && (!e.sha256.eq(&sha256) || !dest_path.exists())
-            {
+            if e.fs_type == entity::FileType::File {
                 // Add task to queue
                 task = Some(Task {
                     relative_path: e.relative_path.clone(),
@@ -149,7 +142,6 @@ impl Controller {
                 });
 
                 // Update entity
-                e.sha256 = sha256;
                 e.thumbnail_path = dest_path_str.replace(&thumbs_path_str, "");
                 e.thumbnail_generating = true;
 

@@ -12,8 +12,11 @@
 	import Menu from '$lib/components/menu/Menu.svelte';
 	import Trash from '$lib/components/icons/Trash.svelte';
 	import ConfirmModal from '$lib/components/layout/ConfirmModal.svelte';
+	import PageTransitionWrapper from '$lib/components/layout/PageTransitionWrapper.svelte';
+	import ProgressWrapper from '$lib/components/progress/ProgressWrapper.svelte';
 
 	let showNewSource = false;
+	let loading = false;
 
 	/* Fetch sources */
 	let sources: Sources = { sources: [] };
@@ -21,6 +24,7 @@
 	let selected = writable<SelectedMap>({});
 
 	const updateSources = () => {
+		loading = true;
 		list()
 			.then((res) => {
 				// Update sources
@@ -38,8 +42,12 @@
 				}, {} as SelectedMap);
 
 				selected.set(newSelected);
+				loading = false;
 			})
-			.catch(catchBad);
+			.catch((err) => {
+				catchBad(err);
+				loading = false;
+			});
 	};
 
 	updateSources();
@@ -48,14 +56,19 @@
 	$: selectedSources = Object.keys($selected).filter((key) => $selected[key]);
 
 	const deleteSources = () => {
+		loading = true;
 		const promises = selectedSources.map(remove);
 
 		Promise.all(promises)
 			.then(() => {
 				good(`Successfully deleted ${promises.length} sources.`);
 				updateSources();
+				loading = false;
 			})
-			.catch(catchBad);
+			.catch((err) => {
+				catchBad(err);
+				loading = false;
+			});
 	};
 
 	$: menuOptions = [
@@ -71,43 +84,49 @@
 	let showConfirmDelete = false;
 </script>
 
-<PathHeader path={[{ label: 'My Library', route: '/library' }]} />
+{#if loading}
+	<ProgressWrapper />
+{/if}
 
-<div class="flex justify-between pb-1 px-2">
-	<div class="flex flex-col justify-end">
-		<p class="text-gray-500 text-base">
-			Select or add an image source. Double-click to view a source's contents.
-		</p>
-	</div>
+<PageTransitionWrapper>
+	<PathHeader path={[{ label: 'My Library', route: '/library' }]} />
 
-	<div class="flex flex-row space-x-3">
-		<Menu label="Actions" options={menuOptions} position="right" />
-	</div>
-</div>
-
-<Separator className="my-2" />
-
-<div class="w-full flex flex-wrap">
-	{#each sources.sources as source}
-		<div class="w-1/2 sm:w-1/3 md:w-1/4 xl:w-1/5 2xl:w-1/6 p-2">
-			<FolderCard
-				active={$selected[source.id]}
-				onClick={() => {
-					selected.update((a) => {
-						a[source.id] = !a[source.id];
-						return a;
-					});
-				}}
-				onDoubleClick={() => routeToPage(`/library/${source.id}`, { subpath: '' })}
-				name={source.name}
-			/>
+	<div class="flex justify-between pb-1 px-2">
+		<div class="flex flex-col justify-end">
+			<p class="text-gray-500 text-base">
+				Select or add an image source. Double-click to view a source's contents.
+			</p>
 		</div>
-	{/each}
 
-	<div class="w-1/2 sm:w-1/3 md:w-1/4 xl:w-1/5 2xl:w-1/6 p-2">
-		<FolderCard onClick={() => (showNewSource = true)} name="Add Source" add />
+		<div class="flex flex-row space-x-3">
+			<Menu label="Actions" options={menuOptions} position="right" />
+		</div>
 	</div>
-</div>
+
+	<Separator className="my-2" />
+
+	<div class="w-full flex flex-wrap">
+		{#each sources.sources as source}
+			<div class="w-1/2 sm:w-1/3 md:w-1/4 xl:w-1/5 2xl:w-1/6 p-2">
+				<FolderCard
+					active={$selected[source.id]}
+					onClick={() => {
+						selected.update((a) => {
+							a[source.id] = !a[source.id];
+							return a;
+						});
+					}}
+					onDoubleClick={() => routeToPage(`/library/${source.id}`, { subpath: '' })}
+					name={source.name}
+				/>
+			</div>
+		{/each}
+
+		<div class="w-1/2 sm:w-1/3 md:w-1/4 xl:w-1/5 2xl:w-1/6 p-2">
+			<FolderCard onClick={() => (showNewSource = true)} name="Add Source" add />
+		</div>
+	</div>
+</PageTransitionWrapper>
 
 {#if showNewSource}
 	<NewSourceModal

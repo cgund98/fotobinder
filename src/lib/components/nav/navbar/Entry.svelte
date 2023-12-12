@@ -11,7 +11,9 @@
 	$: active = $page.url.pathname.startsWith(href);
 
 	$: iconProps = {
-		className: `h-[20px] w-[20px] ${active ? 'text-teal-500' : 'text-gray-500'}`
+		className: `h-[20px] w-[20px] duration-200 ease-out ${
+			active ? 'text-teal-500' : 'text-gray-500'
+		}`
 	};
 </script>
 

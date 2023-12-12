@@ -47,6 +47,15 @@ fn check_in_progress(task: Task, repo: &Arc<Repo>) -> Result<bool, AppError> {
     Ok(entry.thumbnail_generating)
 }
 
+fn check_hash_changed(task: Task, repo: &Arc<Repo>, source: String) -> Result<bool, AppError> {
+    let source_path = std::path::Path::new(&source);
+    let entry = repo.get_by_ids(&task.relative_path, &task.source_id)?;
+
+    let sha256 = crate::fs::image::hash(source_path)?;
+
+    Ok(!sha256.eq(&entry.sha256))
+}
+
 pub async fn queue_proc(queue: Arc<TaskQueue>, repo: Arc<Repo>) {
     println!("Waiting for create thumbnails...");
     loop {
@@ -62,6 +71,18 @@ pub async fn queue_proc(queue: Arc<TaskQueue>, repo: Arc<Repo>) {
         } else if let Ok(is_generating) = in_progress {
             if !is_generating {
                 println!("Thumbnail marked as not generating. Skipping...");
+                continue;
+            }
+        }
+
+        // Check if image hash hash changes
+        let hash_changed = check_hash_changed(task.clone(), &repo, task.source.clone());
+        if let Err(err) = hash_changed {
+            println!("Error checking file hash: {}", err);
+            continue;
+        } else if let Ok(has_changed) = hash_changed {
+            if !has_changed {
+                println!("Source file's hash has not changed. Skipping...");
                 continue;
             }
         }
