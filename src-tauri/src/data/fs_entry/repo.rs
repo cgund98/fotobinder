@@ -14,7 +14,8 @@ impl Repo {
     pub fn save(&self, entry: entity::FsEntry) -> Result<entity::FsEntry, crate::errors::AppError> {
         let d_entry = entity::DbFsEntry::from(entry);
 
-        self.pool.get().unwrap().execute(
+        let p = self.pool.get()?;
+        p.execute(
             "INSERT INTO fs_entries \
                 (relative_path, base_path, source_id, fs_type, hidden, sha256, image_type, thumbnail_path, thumbnail_generating, additional_fields) \
             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10) \
@@ -50,7 +51,7 @@ impl Repo {
         relative_path: &str,
         source_id: &str,
     ) -> Result<entity::FsEntry, crate::errors::AppError> {
-        let pool = self.pool.get().unwrap();
+        let pool = self.pool.get()?;
         let mut stmt = pool.prepare(
             "SELECT \
                 relative_path, base_path, source_id, fs_type, hidden, sha256, image_type, thumbnail_path, thumbnail_generating, additional_fields \
@@ -77,7 +78,10 @@ impl Repo {
         })?;
 
         match ent_iter.last() {
-            Some(ent) => Ok(entity::FsEntry::from(ent.unwrap())),
+            Some(ent) => {
+                let e = ent?;
+                Ok(entity::FsEntry::from(e))
+            }
             None => Err(crate::errors::AppError::NotFound(format!(
                 "relative_path = '{}', source_id = {}",
                 relative_path, source_id
@@ -90,7 +94,7 @@ impl Repo {
         source_id: &str,
         path_prefix: &str,
     ) -> Result<Vec<entity::FsEntry>, crate::errors::AppError> {
-        let pool = self.pool.get().unwrap();
+        let pool = self.pool.get()?;
         let mut stmt =
             pool.prepare("SELECT \
             relative_path, base_path, source_id, fs_type, hidden, sha256, image_type, thumbnail_path, thumbnail_generating, additional_fields \
@@ -98,7 +102,7 @@ impl Repo {
         WHERE \
             source_id = ?1 AND
             base_path = ?2 \
-            ")?;
+            LIMIT 1000")?;
 
         // Map results
         let ent_iter = stmt.query_map([source_id, path_prefix], |row| {
@@ -119,7 +123,8 @@ impl Repo {
         let mut entries: Vec<entity::FsEntry> = Vec::new();
 
         for db_entry in ent_iter {
-            let entry = entity::FsEntry::from(db_entry.unwrap());
+            let d = db_entry?;
+            let entry = entity::FsEntry::from(d);
 
             entries.push(entry);
         }
@@ -131,7 +136,7 @@ impl Repo {
         &self,
         source_id: &str,
     ) -> Result<Vec<entity::FsEntry>, crate::errors::AppError> {
-        let pool = self.pool.get().unwrap();
+        let pool = self.pool.get()?;
         let mut stmt =
             pool.prepare("SELECT \
             relative_path, base_path, source_id, fs_type, hidden, sha256, image_type, thumbnail_path, thumbnail_generating, additional_fields \
@@ -158,7 +163,8 @@ impl Repo {
         let mut entries: Vec<entity::FsEntry> = Vec::new();
 
         for db_entry in ent_iter {
-            let entry = entity::FsEntry::from(db_entry.unwrap());
+            let d = db_entry?;
+            let entry = entity::FsEntry::from(d);
 
             entries.push(entry);
         }
@@ -170,7 +176,7 @@ impl Repo {
         &self,
         source_id: &str,
     ) -> Result<Vec<entity::FsEntry>, crate::errors::AppError> {
-        let pool = self.pool.get().unwrap();
+        let pool = self.pool.get()?;
         let mut stmt =
             pool.prepare("SELECT \
             relative_path, base_path, source_id, fs_type, hidden, sha256, image_type, thumbnail_path, thumbnail_generating, additional_fields \
@@ -199,7 +205,46 @@ impl Repo {
         let mut entries: Vec<entity::FsEntry> = Vec::new();
 
         for db_entry in ent_iter {
-            let entry = entity::FsEntry::from(db_entry.unwrap());
+            let d = db_entry?;
+            let entry = entity::FsEntry::from(d);
+
+            entries.push(entry);
+        }
+
+        Ok(entries)
+    }
+
+    pub fn list_by_missing_thumbnails(
+        &self,
+    ) -> Result<Vec<entity::FsEntry>, crate::errors::AppError> {
+        let pool = self.pool.get()?;
+        let mut stmt =
+            pool.prepare("SELECT \
+            relative_path, base_path, source_id, fs_type, hidden, sha256, image_type, thumbnail_path, thumbnail_generating, additional_fields \
+        FROM fs_entries \
+        WHERE fs_type = 'File' AND thumbnail_generating = true")?;
+
+        // Map results
+        let ent_iter = stmt.query_map([], |row| {
+            Ok(entity::DbFsEntry {
+                relative_path: row.get(0)?,
+                base_path: row.get(1)?,
+                source_id: row.get(2)?,
+                fs_type: row.get(3)?,
+                hidden: row.get(4)?,
+                sha256: row.get(5)?,
+                image_type: row.get(6)?,
+                thumbnail_path: row.get(7)?,
+                thumbnail_generating: row.get(8)?,
+                additional_fields: row.get(9)?,
+            })
+        })?;
+
+        let mut entries: Vec<entity::FsEntry> = Vec::new();
+
+        for db_entry in ent_iter {
+            let d = db_entry?;
+            let entry = entity::FsEntry::from(d);
 
             entries.push(entry);
         }
@@ -211,7 +256,7 @@ impl Repo {
         &self,
         collection_id: &str,
     ) -> Result<Vec<entity::FsEntry>, crate::errors::AppError> {
-        let pool = self.pool.get().unwrap();
+        let pool = self.pool.get()?;
         let mut stmt = pool.prepare(
             "SELECT fe.* \
             FROM fs_entries fe \
@@ -240,7 +285,8 @@ impl Repo {
         let mut entries: Vec<entity::FsEntry> = Vec::new();
 
         for db_entry in ent_iter {
-            let entry = entity::FsEntry::from(db_entry.unwrap());
+            let d = db_entry?;
+            let entry = entity::FsEntry::from(d);
 
             entries.push(entry);
         }
@@ -253,7 +299,7 @@ impl Repo {
         includes: Vec<String>,
         excludes: Vec<String>,
     ) -> Result<Vec<entity::FsEntry>, crate::errors::AppError> {
-        let pool = self.pool.get().unwrap();
+        let pool = self.pool.get()?;
 
         let excludes_str = excludes
             .iter()
@@ -326,7 +372,8 @@ impl Repo {
         let mut entries: Vec<entity::FsEntry> = Vec::new();
 
         for db_entry in ent_iter {
-            let entry = entity::FsEntry::from(db_entry.unwrap());
+            let d = db_entry?;
+            let entry = entity::FsEntry::from(d);
 
             entries.push(entry);
         }
@@ -339,13 +386,20 @@ impl Repo {
         relative_path: &str,
         source_id: &str,
     ) -> Result<(), crate::errors::AppError> {
-        let pool = self.pool.get().unwrap();
+        let pool = self.pool.get()?;
         pool.execute(
             "DELETE FROM fs_entries WHERE \
                 relative_path = ?1 AND \
                 source_id = ?2",
             [relative_path, source_id],
         )?;
+
+        Ok(())
+    }
+
+    pub fn delete_by_source_id(&self, source_id: &str) -> Result<(), crate::errors::AppError> {
+        let pool = self.pool.get()?;
+        pool.execute("DELETE FROM fs_entries WHERE source_id = ?1", [source_id])?;
 
         Ok(())
     }

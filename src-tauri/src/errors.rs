@@ -35,6 +35,9 @@ pub enum AppError {
 
     #[error("500 <|> Unable to parse exif fields: {0}")]
     ExifParseError(#[from] exif::Error),
+
+    #[error("500 <|> Unable to get connection pool: {0}")]
+    R2d2SqliteError(#[from] r2d2::Error),
 }
 
 #[derive(Serialize)]

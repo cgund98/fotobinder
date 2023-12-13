@@ -36,8 +36,16 @@ pub fn gen_thumbnail(source: String, destination: String) -> Result<(u32, u32), 
     let source_path = Path::new(&source);
     let dest_path = Path::new(&destination);
 
-    let reader = ImageReader::open(source_path)?;
+    // Create reader
+    let mut reader = ImageReader::open(source_path)?;
+    let mut limits = image::io::Limits::default();
+    limits.max_alloc = Some(1024 * 1024 * 1024 * 2);
+    limits.max_image_height = None;
+    limits.max_image_width = None;
+    reader.limits(limits);
+
     let img = reader.decode()?;
+
     let width = NonZeroU32::new(img.width()).unwrap();
     let height = NonZeroU32::new(img.height()).unwrap();
     let mut src_image = fr::Image::from_vec_u8(
@@ -54,9 +62,14 @@ pub fn gen_thumbnail(source: String, destination: String) -> Result<(u32, u32), 
 
     // Create container for data of destination image
     let (w, h) = img.dimensions();
-    let scale = min(w, h) / 250;
-    let dst_width = NonZeroU32::new(w / scale).unwrap();
-    let dst_height = NonZeroU32::new(h / scale).unwrap();
+    let mut scale = min(w, h) as f32 / 250.0;
+
+    if scale == 0.0 {
+        scale = 1.0;
+    }
+
+    let dst_width = NonZeroU32::new((w as f32 / scale) as u32).unwrap();
+    let dst_height = NonZeroU32::new((h as f32 / scale) as u32).unwrap();
     let mut dst_image = fr::Image::new(dst_width, dst_height, src_image.pixel_type());
 
     // Get mutable view of destination image data

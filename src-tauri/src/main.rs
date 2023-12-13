@@ -18,6 +18,7 @@ async fn main() {
             cmd::fs_entry::generate_missing_thumbnails,
             cmd::fs_entry::list_fs_entries_by_tags,
             cmd::fs_entry::list_fs_entries_by_collection_id,
+            cmd::fs_entry::get_thumbnail_queue_size,
             cmd::tag::create_tag,
             cmd::tag::get_tag,
             cmd::tag::delete_tag,

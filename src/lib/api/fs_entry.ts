@@ -59,6 +59,10 @@ export const generateMissingThumbnails = async (sourceId: string) => {
 	})) as number;
 };
 
+export const getThumbnailQueueSize = async () => {
+	return (await invoke('get_thumbnail_queue_size', {})) as number;
+};
+
 export const listByTags = async (includes: string[], excludes: string[]) => {
 	const entries = (await invoke('list_fs_entries_by_tags', {
 		includes,

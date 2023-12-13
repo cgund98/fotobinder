@@ -1,17 +1,15 @@
 <script lang="ts">
-	import path from 'path-browserify';
+	import path, { relative } from 'path-browserify';
 	import { appDataDir, join } from '@tauri-apps/api/path';
 	import { convertFileSrc } from '@tauri-apps/api/tauri';
 
 	import { writable } from 'svelte/store';
-	import { page } from '$app/stores';
 
 	import PathHeader from '$lib/components/library/header/PathHeader.svelte';
 	import FolderCard from '$lib/components/library/folder/FolderCard.svelte';
 	import Separator from '$lib/components/decoration/Separator.svelte';
 	import ImageCard from '$lib/components/library/image/ImageCard.svelte';
 	import EditTagsModal from '$lib/components/tags/EditTagsModal.svelte';
-	import NewTagModal from '$lib/components/tags/NewTagModal.svelte';
 	import Button from '$lib/components/button/Button.svelte';
 	import Tag from '$lib/components/icons/Tag.svelte';
 	import Photo from '$lib/components/icons/Photo.svelte';
@@ -22,11 +20,14 @@
 	import type { PageData } from './$types';
 	import { catchBad, good } from '$lib/store/alerts';
 	import Menu from '$lib/components/menu/Menu.svelte';
-	import FolderSolid from '$lib/components/icons/FolderSolid.svelte';
 	import { routeToPage } from '$lib/nav/route';
-	import { get, listByParentId } from '$lib/api/collection';
+	import { get, listByParentId, remove } from '$lib/api/collection';
+	import { remove as removeCollectionImage } from '$lib/api/collection_image';
 	import { FileType, listbyCollectionId } from '$lib/api/fs_entry';
 	import PageTransitionWrapper from '$lib/components/layout/PageTransitionWrapper.svelte';
+	import ConfirmModal from '$lib/components/layout/ConfirmModal.svelte';
+	import Plus from '$lib/components/icons/Plus.svelte';
+	import Trash from '$lib/components/icons/Trash.svelte';
 
 	// Read inputs
 	export let data: PageData;
@@ -94,7 +95,7 @@
 						const parts = e.relative_path.split(path.sep);
 						return {
 							src: await mapFileSrc(e.thumbnail_path),
-							id: `${e.source_id}/${e.relative_path}`,
+							id: `${e.source_id}<|>${e.relative_path}`,
 							name: parts[parts.length - 1],
 							relativePath: e.relative_path,
 							sourceId: e.source_id
@@ -120,9 +121,60 @@
 	$: menuOptions = [
 		{
 			label: 'Add to Collection',
-			icon: FolderSolid,
+			icon: Plus,
 			action: () => (showAddToCollection = true),
-			disabled: !imagesSelected
+			disabled: selectedImages.size === 0
+		},
+		{
+			label: 'Remove Images',
+			icon: Photo,
+			action: () => {
+				confirmTitle = 'Confirm Delete';
+				confirmMessage = `Are you sure you want to remove ${selectedImages.size} images from this collection?`;
+				onConfirmAccept = async () => {
+					try {
+						for (let id of selectedImages) {
+							const [sourceId, relativePath] = id.split('<|>');
+							await removeCollectionImage(data.collectionId, relativePath, sourceId);
+						}
+
+						good(`Removed ${selectedImages.size} images from this collection.`);
+
+						selectedImages = new Set();
+						fetchEntries(data.collectionId);
+						showConfirm = false;
+					} catch (err) {
+						catchBad(err);
+					}
+				};
+				showConfirm = true;
+			},
+			disabled: selectedImages.size === 0
+		},
+		{
+			label: 'Delete Collections',
+			icon: Trash,
+			action: () => {
+				confirmTitle = 'Confirm Delete';
+				confirmMessage = `Are you sure you want to delete ${$selectedFolders.size} subcollections?`;
+				onConfirmAccept = async () => {
+					try {
+						for (let collectionId of $selectedFolders) {
+							await remove(collectionId);
+						}
+
+						good(`Deleted ${$selectedFolders.size} subcollection.`);
+
+						selectedFolders.set(new Set());
+						fetchEntries(data.collectionId);
+						showConfirm = false;
+					} catch (err) {
+						catchBad(err);
+					}
+				};
+				showConfirm = true;
+			},
+			disabled: !foldersSelected
 		}
 	];
 
@@ -133,6 +185,13 @@
 
 	$: relativePaths = $images.filter((i) => selectedImages.has(i.id)).map((i) => i.relativePath);
 	$: sourceIds = $images.filter((i) => selectedImages.has(i.id)).map((i) => i.sourceId);
+
+	// Confirm modal
+	let showConfirm = false;
+	let confirmTitle = '';
+	let confirmMessage = '';
+	let onConfirmAccept = () => {};
+	const onConfirmReject: () => void = () => (showConfirm = false);
 </script>
 
 <PageTransitionWrapper>
@@ -266,5 +325,14 @@
 		onClose={() => {
 			showEditTags = false;
 		}}
+	/>
+{/if}
+
+{#if showConfirm}
+	<ConfirmModal
+		title={confirmTitle}
+		message={confirmMessage}
+		onClose={onConfirmReject}
+		onConfirm={onConfirmAccept}
 	/>
 {/if}

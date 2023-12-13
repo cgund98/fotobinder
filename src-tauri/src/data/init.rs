@@ -7,13 +7,9 @@ use crate::data::image_tag;
 use crate::data::path_tag;
 use crate::data::source;
 use crate::data::tag;
+use crate::errors::AppError;
 
-pub fn init_db(pool: &crate::state::PoolType) -> Result<()> {
-    // Enable foreign keys
-    pool.get()
-        .unwrap()
-        .execute("PRAGMA foreign_keys = ON", [])?;
-
+pub fn init_db(pool: &crate::state::PoolType) -> Result<(), AppError> {
     // Initialize entity tables
     source::init::init_db(pool)?;
     fs_entry::init::init_db(pool)?;

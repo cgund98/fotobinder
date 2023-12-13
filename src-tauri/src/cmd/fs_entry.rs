@@ -54,3 +54,8 @@ pub fn list_fs_entries_by_tags(
         .fs_entry_ctrl(|ctrl| ctrl.list_by_tags(includes, excludes))
         .map(FsEntries::from)
 }
+
+#[tauri::command(async)]
+pub fn get_thumbnail_queue_size(handle: tauri::AppHandle) -> Result<usize, AppError> {
+    handle.fs_entry_ctrl(|ctrl| ctrl.get_queue_size())
+}

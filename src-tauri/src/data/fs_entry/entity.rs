@@ -13,16 +13,21 @@ pub enum ImageType {
     #[strum(serialize = "")]
     None,
 
-    #[strum(serialize = "jpg", serialize = "jpeg")]
+    #[strum(
+        serialize = "jpg",
+        serialize = "jpeg",
+        serialize = "JPG",
+        serialize = "JPEG"
+    )]
     Jpeg,
 
-    #[strum(serialize = "png")]
+    #[strum(serialize = "png", serialize = "PNG")]
     Png,
 
-    #[strum(serialize = "bmp")]
+    #[strum(serialize = "bmp", serialize = "BMP")]
     Bmp,
 
-    #[strum(serialize = "tga")]
+    #[strum(serialize = "tga", serialize = "TGA")]
     Tga,
 }
 

@@ -14,7 +14,8 @@ impl Repo {
     pub fn save(&self, source: entity::Source) -> Result<entity::Source, crate::errors::AppError> {
         let d_source = entity::DbSource::from(source);
 
-        self.pool.get().unwrap().execute(
+        let p = self.pool.get()?;
+        p.execute(
             "INSERT INTO sources \
                 (id, source_type, name, path, synced_at) VALUES (?1, ?2, ?3, ?4, ?5) \
             ON CONFLICT(id) DO UPDATE SET \
@@ -37,7 +38,7 @@ impl Repo {
     }
 
     pub fn get_by_id(&self, id: &str) -> Result<entity::Source, crate::errors::AppError> {
-        let pool = self.pool.get().unwrap();
+        let pool = self.pool.get()?;
         let mut stmt = pool
             .prepare("SELECT id, source_type, name, path, synced_at FROM sources WHERE id = ?1")?;
 
@@ -53,13 +54,13 @@ impl Repo {
         })?;
 
         match ent_iter.last() {
-            Some(ent) => Ok(entity::Source::from(ent.unwrap())),
+            Some(ent) => Ok(entity::Source::from(ent?)),
             None => Err(crate::errors::AppError::NotFound(format!("id = '{}'", id))),
         }
     }
 
     pub fn get_by_path(&self, path: &str) -> Result<entity::Source, crate::errors::AppError> {
-        let pool = self.pool.get().unwrap();
+        let pool = self.pool.get()?;
         let mut stmt = pool.prepare(
             "SELECT id, source_type, name, path, synced_at FROM sources WHERE path = ?1",
         )?;
@@ -76,7 +77,7 @@ impl Repo {
         })?;
 
         match ent_iter.last() {
-            Some(ent) => Ok(entity::Source::from(ent.unwrap())),
+            Some(ent) => Ok(entity::Source::from(ent?)),
             None => Err(crate::errors::AppError::NotFound(format!(
                 "path = '{}'",
                 path
@@ -85,7 +86,7 @@ impl Repo {
     }
 
     pub fn list(&self) -> Result<Vec<entity::Source>, crate::errors::AppError> {
-        let pool = self.pool.get().unwrap();
+        let pool = self.pool.get()?;
         let mut stmt =
             pool.prepare("SELECT id, source_type, name, path, synced_at FROM sources")?;
 
@@ -103,7 +104,7 @@ impl Repo {
         let mut sources: Vec<entity::Source> = Vec::new();
 
         for db_source in ent_iter {
-            let source = entity::Source::from(db_source.unwrap());
+            let source = entity::Source::from(db_source?);
 
             sources.push(source);
         }
@@ -113,8 +114,7 @@ impl Repo {
 
     pub fn delete(&self, id: &str) -> Result<(), crate::errors::AppError> {
         self.pool
-            .get()
-            .unwrap()
+            .get()?
             .execute("DELETE FROM sources WHERE id = ?1", [id])?;
 
         Ok(())

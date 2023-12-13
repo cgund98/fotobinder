@@ -17,7 +17,8 @@ impl Repo {
     ) -> Result<entity::CollectionImage, crate::errors::AppError> {
         let d_entry = entity::DbCollectionImage::from(entry);
 
-        self.pool.get().unwrap().execute(
+        let p = self.pool.get()?;
+        p.execute(
             "INSERT INTO collection_images (collection_id, relative_path, source_id) VALUES (?1, ?2, ?3) \
             ON CONFLICT(collection_id, relative_path, source_id) DO NOTHING",
             (&d_entry.collection_id, &d_entry.relative_path, &d_entry.source_id),
@@ -38,7 +39,7 @@ impl Repo {
         relative_path: &str,
         source_id: &str,
     ) -> Result<entity::CollectionImage, crate::errors::AppError> {
-        let pool = self.pool.get().unwrap();
+        let pool = self.pool.get()?;
         let mut stmt = pool.prepare(
             "SELECT collection_id, relative_path, source_id FROM collection_images \
                   WHERE collection_id = ?1 AND relative_path = ?2 AND source_id = ?3",
@@ -54,7 +55,7 @@ impl Repo {
         })?;
 
         match ent_iter.last() {
-            Some(ent) => Ok(ent.unwrap()),
+            Some(ent) => Ok(ent?),
             None => Err(crate::errors::AppError::NotFound(format!(
                 "collection_id = '{}', relative_path = '{}', source_id = '{}'",
                 collection_id, relative_path, source_id,
@@ -67,7 +68,7 @@ impl Repo {
         relative_path: &str,
         source_id: &str,
     ) -> Result<Vec<entity::CollectionImage>, crate::errors::AppError> {
-        let pool = self.pool.get().unwrap();
+        let pool = self.pool.get()?;
         let mut stmt = pool.prepare(
             "SELECT collection_id, relative_path, source_id FROM collection_images \
                   WHERE relative_path = ?1 AND source_id = ?2",
@@ -84,7 +85,7 @@ impl Repo {
 
         let mut entries: Vec<entity::CollectionImage> = Vec::new();
         for db_entry in ent_iter {
-            let entry = db_entry.unwrap();
+            let entry = db_entry?;
 
             entries.push(entry);
         }
@@ -93,7 +94,7 @@ impl Repo {
     }
 
     pub fn list(&self) -> Result<Vec<entity::CollectionImage>, crate::errors::AppError> {
-        let pool = self.pool.get().unwrap();
+        let pool = self.pool.get()?;
         let mut stmt =
             pool.prepare("SELECT collection_id, relative_path, source_id FROM collection_images")?;
 
@@ -108,7 +109,7 @@ impl Repo {
 
         let mut entries: Vec<entity::CollectionImage> = Vec::new();
         for db_entry in ent_iter {
-            let entry = db_entry.unwrap();
+            let entry = db_entry?;
 
             entries.push(entry);
         }
@@ -122,7 +123,7 @@ impl Repo {
         relative_path: &str,
         source_id: &str,
     ) -> Result<(), crate::errors::AppError> {
-        let pool = self.pool.get().unwrap();
+        let pool = self.pool.get()?;
         pool.execute(
             "DELETE FROM collection_images WHERE collection_id = ?1 AND relative_path = ?2 AND source_id = ?3",
             [collection_id, relative_path, source_id],

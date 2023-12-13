@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { listByParentId } from '$lib/api/collection';
+	import { listByParentId, remove } from '$lib/api/collection';
 	import Button, { Variant } from '$lib/components/button/Button.svelte';
 	import NewCollectionModal from '$lib/components/collections/NewCollectionModal.svelte';
 	import Separator from '$lib/components/decoration/Separator.svelte';
@@ -7,8 +7,11 @@
 	import PageTransitionWrapper from '$lib/components/layout/PageTransitionWrapper.svelte';
 	import FolderCard from '$lib/components/library/folder/FolderCard.svelte';
 	import PathHeader from '$lib/components/library/header/PathHeader.svelte';
+	import Trash from '$lib/components/icons/Trash.svelte';
 	import { routeToPage } from '$lib/nav/route';
-	import { catchBad } from '$lib/store/alerts';
+	import { catchBad, good } from '$lib/store/alerts';
+	import ConfirmModal from '$lib/components/layout/ConfirmModal.svelte';
+	import Menu from '$lib/components/menu/Menu.svelte';
 
 	let folders: { id: string; name: string }[] = [];
 
@@ -24,6 +27,45 @@
 	fetchCollections();
 
 	let showNewCollection = false;
+
+	let selectedCollection: string | undefined;
+
+	// Menu options
+	$: menuOptions = [
+		{
+			label: 'Delete Collections',
+			icon: Trash,
+			action: () => {
+				const collectionName = folders.filter((f) => f.id === selectedCollection)[0].name;
+				confirmTitle = 'Confirm Delete';
+				confirmMessage = `Are you sure you want to delete '${collectionName}'?`;
+				onConfirmAccept = async () => {
+					if (!selectedCollection) return;
+
+					try {
+						remove(selectedCollection);
+
+						good(`Deleted '${collectionName}'.`);
+
+						selectedCollection = undefined;
+						fetchCollections();
+						showConfirm = false;
+					} catch (err) {
+						catchBad(err);
+					}
+				};
+				showConfirm = true;
+			},
+			disabled: !selectedCollection
+		}
+	];
+
+	// Confirm modal
+	let showConfirm = false;
+	let confirmTitle = '';
+	let confirmMessage = '';
+	let onConfirmAccept = () => {};
+	const onConfirmReject: () => void = () => (showConfirm = false);
 </script>
 
 <PageTransitionWrapper>
@@ -35,9 +77,7 @@
 		</div>
 
 		<div class="flex flex-row space-x-3">
-			<Button title="Actions" variant={Variant.Secondary} disabled>
-				<ChevronDown className="w-[16px] h-full" />
-			</Button>
+			<Menu label="Actions" options={menuOptions} position="right" />
 		</div>
 	</div>
 
@@ -48,7 +88,12 @@
 			<div class="w-1/2 sm:w-1/3 md:w-1/4 xl:w-1/5 2xl:w-1/6 p-2">
 				<FolderCard
 					name={folder.name}
+					onClick={() => {
+						if (selectedCollection === folder.id) selectedCollection = undefined;
+						else selectedCollection = folder.id;
+					}}
 					onDoubleClick={() => routeToPage(`/collections/${folder.id}`)}
+					active={selectedCollection === folder.id}
 				/>
 			</div>
 		{/each}
@@ -57,6 +102,15 @@
 		</div>
 	</div>
 </PageTransitionWrapper>
+
+{#if showConfirm}
+	<ConfirmModal
+		title={confirmTitle}
+		message={confirmMessage}
+		onClose={onConfirmReject}
+		onConfirm={onConfirmAccept}
+	/>
+{/if}
 
 {#if showNewCollection}
 	<NewCollectionModal

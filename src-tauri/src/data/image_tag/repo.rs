@@ -17,7 +17,8 @@ impl Repo {
     ) -> Result<entity::ImageTag, crate::errors::AppError> {
         let d_entry = entity::DbImageTag::from(entry);
 
-        self.pool.get().unwrap().execute(
+        let p = self.pool.get()?;
+        p.execute(
             "INSERT INTO image_tags (tag_id, relative_path, source_id) VALUES (?1, ?2, ?3) \
             ON CONFLICT(tag_id, relative_path, source_id) DO NOTHING",
             (&d_entry.tag_id, &d_entry.relative_path, &d_entry.source_id),
@@ -35,7 +36,7 @@ impl Repo {
         relative_path: &str,
         source_id: &str,
     ) -> Result<entity::ImageTag, crate::errors::AppError> {
-        let pool = self.pool.get().unwrap();
+        let pool = self.pool.get()?;
         let mut stmt = pool.prepare(
             "SELECT tag_id, relative_path, source_id FROM image_tags \
                   WHERE tag_id = ?1 AND relative_path = ?2 AND source_id = ?3",
@@ -51,7 +52,7 @@ impl Repo {
         })?;
 
         match ent_iter.last() {
-            Some(ent) => Ok(ent.unwrap()),
+            Some(ent) => Ok(ent?),
             None => Err(crate::errors::AppError::NotFound(format!(
                 "tag_id = '{}', relative_path = '{}', source_id = '{}'",
                 tag_id, relative_path, source_id,
@@ -64,7 +65,7 @@ impl Repo {
         relative_path: &str,
         source_id: &str,
     ) -> Result<Vec<entity::ImageTag>, crate::errors::AppError> {
-        let pool = self.pool.get().unwrap();
+        let pool = self.pool.get()?;
         let mut stmt = pool.prepare(
             "SELECT tag_id, relative_path, source_id FROM image_tags \
                   WHERE relative_path = ?1 AND source_id = ?2",
@@ -81,7 +82,7 @@ impl Repo {
 
         let mut entries: Vec<entity::ImageTag> = Vec::new();
         for db_entry in ent_iter {
-            let entry = db_entry.unwrap();
+            let entry = db_entry?;
 
             entries.push(entry);
         }
@@ -90,7 +91,7 @@ impl Repo {
     }
 
     pub fn list(&self) -> Result<Vec<entity::ImageTag>, crate::errors::AppError> {
-        let pool = self.pool.get().unwrap();
+        let pool = self.pool.get()?;
         let mut stmt = pool.prepare("SELECT tag_id, relative_path, source_id FROM image_tags")?;
 
         // Map results
@@ -104,7 +105,7 @@ impl Repo {
 
         let mut entries: Vec<entity::ImageTag> = Vec::new();
         for db_entry in ent_iter {
-            let entry = db_entry.unwrap();
+            let entry = db_entry?;
 
             entries.push(entry);
         }
@@ -118,7 +119,7 @@ impl Repo {
         relative_path: &str,
         source_id: &str,
     ) -> Result<(), crate::errors::AppError> {
-        let pool = self.pool.get().unwrap();
+        let pool = self.pool.get()?;
         pool.execute(
             "DELETE FROM image_tags WHERE tag_id = ?1 AND relative_path = ?2 AND source_id = ?3",
             [tag_id, relative_path, source_id],

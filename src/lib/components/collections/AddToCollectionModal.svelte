@@ -44,7 +44,12 @@
 					return { id: col.id, parent_id, name };
 				});
 
-			let filteredCollections = res.collections;
+			// Filter out parent ids that do not exist.
+			let filteredCollections = res.collections.filter(
+				(col) => col.parent_id === null || map[col.parent_id]
+			);
+
+			// Construct full names
 			while (true) {
 				filteredCollections = assignNames(filteredCollections);
 
@@ -53,7 +58,6 @@
 					(count, col) => count + (col.parent_id === null ? 0 : 1),
 					0
 				);
-				console.log('count', subCount);
 				if (subCount === 0) break;
 			}
 			filteredCollections = filteredCollections.filter((col) => col.parent_id === null);

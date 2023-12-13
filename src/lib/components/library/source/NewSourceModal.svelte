@@ -29,15 +29,22 @@
 		loading = true;
 		try {
 			const source = await create(name, type, path);
-			let scanRes = await scan(source.id);
-			good(
-				`Created source '${source.name}'. Found ${scanRes.entries_created} file entries when scanned.`
-			);
+			good(`Created source '${source.name}'. Scanning for entries. This may take a while... `);
+
+			// Begin scanning
+			scan(source.id)
+				.then((scanRes) => {
+					good(
+						`Scanning finished. Found ${scanRes.entries_created} file entries for source '${source.name}'.`
+					);
+					loading = false;
+				})
+				.catch(catchBad);
+
 			onClose(source);
 		} catch (err: any) {
 			catchBad(err);
 		}
-		loading = false;
 	};
 
 	// Validate inputs
@@ -103,7 +110,7 @@
 				}}
 				variant={Variant.Primary}
 				title="Add Source"
-				disabled={!valid}
+				disabled={!valid || loading}
 			>
 				<FolderSolid className="w-[16px] -mt-[1px]" />
 			</Button>

@@ -28,6 +28,10 @@
 	import Reset from '$lib/components/icons/Reset.svelte';
 	import { routeToPage } from '$lib/nav/route';
 	import PageTransitionWrapper from '$lib/components/layout/PageTransitionWrapper.svelte';
+	import ThumbnailQueueProgress from '$lib/components/progress/ThumbnailQueueProgress.svelte';
+	import ProgressWrapper from '$lib/components/progress/ProgressWrapper.svelte';
+
+	let loading = false;
 
 	// Read inputs
 	export let data: PageData;
@@ -77,19 +81,23 @@
 	};
 
 	// Fetch data
-	const fetchSource = () => {
-		const doFn = async () => {
+	const fetchSource = async () => {
+		loading = true;
+		try {
 			const res = await getSource(data.sourceId);
 			source.set(res);
 			updateNav();
 			fetchEntries(subpath);
-		};
-
-		doFn().catch(catchBad);
+		} catch (err) {
+			catchBad(err);
+		}
+		loading = false;
 	};
 
-	const fetchEntries = (subpath: string) => {
-		const doFn = async () => {
+	const fetchEntries = async (subpath: string) => {
+		loading = true;
+
+		try {
 			const res = await listBySourceId(data.sourceId, subpath);
 
 			// Parse folderslistBySourceid
@@ -102,7 +110,8 @@
 						id: e.relative_path,
 						relativePath: e.relative_path
 					};
-				});
+				})
+				.sort((a, b) => a.name.localeCompare(b.name));
 
 			// Filter selection
 			let folderIds = newFolders.reduce((s, i) => s.add(i.id), new Set<String>());
@@ -117,7 +126,7 @@
 			};
 
 			// Parse images
-			const newImages = await Promise.all(
+			let newImages = await Promise.all(
 				res.entries
 					.filter((e) => e.fs_type == FileType.File)
 					.map(async (e) => {
@@ -131,6 +140,7 @@
 						};
 					})
 			);
+			newImages = newImages.sort((a, b) => a.relativePath.localeCompare(b.relativePath));
 
 			// Filter selection
 			let imageIds = newImages.reduce((s, i) => s.add(i.id), new Set<String>());
@@ -140,8 +150,10 @@
 			folders.set(newFolders);
 			images.set(newImages);
 			updateNav();
-		};
-		doFn().catch(catchBad);
+		} catch (err) {
+			catchBad(err);
+		}
+		loading = false;
 	};
 
 	// Initialize fields
@@ -161,19 +173,24 @@
 		{
 			label: 'Scan for Files',
 			icon: Reset,
-			action: () =>
-				scan(data.sourceId)
-					.then((res) => {
-						let msg = `Found ${res.entries_created} new entries and \
+			action: async () => {
+				loading = true;
+				try {
+					const res = await scan(data.sourceId);
+
+					let msg = `Found ${res.entries_created} new entries and \
 							deleted ${res.entries_deleted} outdated entries.`;
 
-						if (res.thumbnails_created)
-							msg += ` Generating ${res.thumbnails_created} \
+					if (res.thumbnails_created)
+						msg += ` Generating ${res.thumbnails_created} \
 							thumbnails in the background...`;
-						good(msg);
-						fetchEntries(subpath);
-					})
-					.catch(catchBad),
+					good(msg);
+					fetchEntries(subpath);
+				} catch (err) {
+					catchBad(err);
+				}
+				loading = false;
+			},
 			disabled: false
 		},
 		{
@@ -200,6 +217,10 @@
 		? $images.filter((i) => selectedImages.has(i.id)).map((i) => i.relativePath)
 		: $folders.filter((i) => $selectedFolders.has(i.id)).map((i) => i.relativePath);
 </script>
+
+{#if loading}
+	<ProgressWrapper />
+{/if}
 
 <PageTransitionWrapper>
 	<PathHeader bind:path={$navEntries} />
@@ -303,6 +324,8 @@
 		{/each}
 	</div>
 </PageTransitionWrapper>
+
+<ThumbnailQueueProgress />
 
 {#if showEditTags}
 	<EditTagsModal

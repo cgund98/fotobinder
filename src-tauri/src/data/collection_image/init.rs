@@ -1,7 +1,6 @@
-use rusqlite::Result;
-
-pub fn init_db(pool: &crate::state::PoolType) -> Result<()> {
-    pool.get().unwrap().execute(
+pub fn init_db(pool: &crate::state::PoolType) -> Result<(), crate::errors::AppError> {
+    let p = pool.get()?;
+    p.execute(
         "CREATE TABLE IF NOT EXISTS collection_images (
             relative_path TEXT,
             source_id TEXT,

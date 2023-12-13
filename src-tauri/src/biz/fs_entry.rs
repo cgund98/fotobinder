@@ -100,20 +100,26 @@ impl Controller {
 
         let thumbs_path_str = String::from(thumbnails_path.to_string_lossy());
 
-        for entry in entries {
+        let mut tasks: Vec<Task> = Vec::new();
+
+        let mut construct_time = 0;
+        let mut persist_time = 0;
+
+        for (idx, entry) in entries.iter().enumerate() {
+            let mut now = std::time::Instant::now();
             let fs_type = match entry.is_dir {
                 true => entity::FileType::Directory,
                 false => entity::FileType::File,
             };
 
             let mut e = entity::FsEntry {
-                base_path: entry.base_path,
-                relative_path: entry.relative_path,
+                base_path: entry.base_path.clone(),
+                relative_path: entry.relative_path.clone(),
                 source_id: String::from(source_id),
                 fs_type,
                 hidden: false,
                 sha256: String::from(""),
-                image_type: entry.ext,
+                image_type: entry.ext.clone(),
                 thumbnail_path: String::from(""),
                 thumbnail_generating: true,
                 additional_fields: Vec::new(),
@@ -148,11 +154,31 @@ impl Controller {
                 thumbnail_count += 1;
             }
 
+            construct_time += now.elapsed().as_micros();
+            now = std::time::Instant::now();
+
             self.repo.save(e)?;
 
+            persist_time += now.elapsed().as_micros();
+
             if let Some(t) = task {
-                self.queue.push(t);
+                tasks.push(t);
             }
+
+            if idx % 1000 == 0 && idx > 0 {
+                let count: u128 = (idx + 1).try_into().unwrap();
+                println!(
+                    "Inserting entry #{}. avg construction time: {}μs, avg persist time: {}μs",
+                    idx,
+                    construct_time / count,
+                    persist_time / count
+                )
+            }
+        }
+
+        // Add thumbnail generation tasks to queue
+        for task in tasks {
+            self.queue.push(task);
         }
 
         Ok(thumbnail_count)
@@ -199,6 +225,10 @@ impl Controller {
         Ok((deleted_count, entries_map))
     }
 
+    pub fn get_queue_size(&self) -> Result<usize, AppError> {
+        Ok(self.queue.len())
+    }
+
     pub fn list_by_source_id_and_path_prefix(
         &self,
         source_id: &str,
@@ -225,5 +255,9 @@ impl Controller {
         excludes: Vec<String>,
     ) -> Result<Vec<entity::FsEntry>, AppError> {
         self.repo.list_by_tags(includes, excludes)
+    }
+
+    pub fn delete_by_source_id(&self, source_id: &str) -> Result<(), AppError> {
+        self.repo.delete_by_source_id(source_id)
     }
 }

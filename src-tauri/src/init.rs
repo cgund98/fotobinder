@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{sync::Arc, time::Duration};
 
 use r2d2_sqlite::SqliteConnectionManager;
 use tauri::{Manager, State};
@@ -28,8 +28,13 @@ fn init_db(app: &mut tauri::App) -> Result<Arc<PoolType>, Box<dyn std::error::Er
     let db_file = data_path.join("main.db");
 
     // Initialize connection
-    let manager = SqliteConnectionManager::file(db_file);
-    let pool = r2d2::Pool::new(manager).unwrap();
+    let pragma = "PRAGMA foreign_keys = ON; PRAGMA synchronous=NORMAL; PRAGMA journal_mode=WAL;";
+    let manager = SqliteConnectionManager::file(db_file).with_init(|c| c.execute_batch(pragma));
+    let builder = r2d2::Pool::builder();
+    let pool = builder
+        .connection_timeout(Duration::from_secs(10))
+        .build(manager)
+        .unwrap();
 
     crate::data::init::init_db(&pool)?;
 
@@ -88,9 +93,11 @@ fn init_controllers(app: &mut tauri::App, pool: Arc<PoolType>) -> InitResult {
         biz::collection_image::Controller::new(collection_image_repo, fs_entry_repo.clone());
     *state.collection_image_controller.lock().unwrap() = Some(collection_image_controller);
 
-    // Initialize thumbnail process
-    let proc_th_queue = th_queue.clone();
-    tokio::spawn(async move { queue::queue_proc(proc_th_queue, fs_entry_repo).await });
+    // Initialize thumbnail processes
+    let num_threads = (num_cpus::get() - 1) / 2;
+    for _ in 1..num_threads {
+        tokio::spawn(queue::queue_proc(th_queue.clone(), fs_entry_repo.clone()));
+    }
 
     Ok(())
 }

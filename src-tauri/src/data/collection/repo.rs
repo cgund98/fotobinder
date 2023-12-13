@@ -17,7 +17,8 @@ impl Repo {
     ) -> Result<entity::Collection, crate::errors::AppError> {
         let d_entry = entity::DbCollection::from(entry);
 
-        self.pool.get().unwrap().execute(
+        let p = self.pool.get()?;
+        p.execute(
             "INSERT INTO collections (id, parent_id, name) VALUES (?1, ?2, ?3) \
             ON CONFLICT(id) DO UPDATE SET \
                 parent_id=excluded.parent_id, \
@@ -31,7 +32,7 @@ impl Repo {
     }
 
     pub fn get_by_id(&self, id: &str) -> Result<entity::Collection, crate::errors::AppError> {
-        let pool = self.pool.get().unwrap();
+        let pool = self.pool.get()?;
         let mut stmt = pool.prepare("SELECT id, parent_id, name FROM collections WHERE id = ?1")?;
 
         // Map results
@@ -44,13 +45,13 @@ impl Repo {
         })?;
 
         match ent_iter.last() {
-            Some(ent) => Ok(ent.unwrap()),
+            Some(ent) => Ok(ent?),
             None => Err(crate::errors::AppError::NotFound(format!("id = '{}'", id,))),
         }
     }
 
     pub fn list(&self) -> Result<Vec<entity::Collection>, crate::errors::AppError> {
-        let pool = self.pool.get().unwrap();
+        let pool = self.pool.get()?;
         let mut stmt = pool.prepare("SELECT id, parent_id, name FROM collections")?;
 
         // Map results
@@ -64,7 +65,7 @@ impl Repo {
 
         let mut entries: Vec<entity::Collection> = Vec::new();
         for db_entry in ent_iter {
-            let entry = db_entry.unwrap();
+            let entry = db_entry?;
 
             entries.push(entry);
         }
@@ -89,7 +90,7 @@ impl Repo {
             params = null_params;
         }
 
-        let pool = self.pool.get().unwrap();
+        let pool = self.pool.get()?;
         let mut stmt = pool.prepare(sql)?;
 
         // Map results
@@ -103,7 +104,7 @@ impl Repo {
 
         let mut entries: Vec<entity::Collection> = Vec::new();
         for db_entry in ent_iter {
-            let entry = db_entry.unwrap();
+            let entry = db_entry?;
 
             entries.push(entry);
         }
@@ -112,7 +113,7 @@ impl Repo {
     }
 
     pub fn delete(&self, id: &str) -> Result<(), crate::errors::AppError> {
-        let pool = self.pool.get().unwrap();
+        let pool = self.pool.get()?;
         pool.execute("DELETE FROM collections WHERE id = ?1", [id])?;
 
         Ok(())

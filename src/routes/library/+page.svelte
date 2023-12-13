@@ -14,34 +14,27 @@
 	import ConfirmModal from '$lib/components/layout/ConfirmModal.svelte';
 	import PageTransitionWrapper from '$lib/components/layout/PageTransitionWrapper.svelte';
 	import ProgressWrapper from '$lib/components/progress/ProgressWrapper.svelte';
+	import ThumbnailQueueProgress from '$lib/components/progress/ThumbnailQueueProgress.svelte';
+	import SizeTransition from '$lib/components/animation/SizeTransition.svelte';
 
 	let showNewSource = false;
 	let loading = false;
 
 	/* Fetch sources */
 	let sources: Sources = { sources: [] };
-	type SelectedMap = { [index: string]: boolean };
-	let selected = writable<SelectedMap>({});
+	let selected: undefined | string;
 
 	const updateSources = () => {
 		loading = true;
 		list()
 			.then((res) => {
 				// Update sources
-				sources = res;
+				sources = { sources: res.sources.sort((a, b) => a.name.localeCompare(b.name)) };
 
 				// Update selection
 				const newIds = new Set(sources.sources.map((s) => s.id));
-				const overlap = new Set(Object.keys($selected).filter((k) => newIds.has(k)));
+				let newSelected = !selected || !newIds.has(selected) ? undefined : selected;
 
-				let newSelected = $selected;
-				newSelected = Object.keys(newSelected).reduce((prev, cur) => {
-					if (newIds.has(cur)) prev[cur] = false;
-					else if (overlap.has(cur)) prev[cur] = newSelected[cur];
-					return prev;
-				}, {} as SelectedMap);
-
-				selected.set(newSelected);
 				loading = false;
 			})
 			.catch((err) => {
@@ -53,22 +46,19 @@
 	updateSources();
 
 	/* Menu Options */
-	$: selectedSources = Object.keys($selected).filter((key) => $selected[key]);
+	$: selectedName = sources.sources.filter((s) => s.id === selected)[0]?.name;
+	const deleteSources = async () => {
+		if (!selected) return;
 
-	const deleteSources = () => {
 		loading = true;
-		const promises = selectedSources.map(remove);
-
-		Promise.all(promises)
-			.then(() => {
-				good(`Successfully deleted ${promises.length} sources.`);
-				updateSources();
-				loading = false;
-			})
-			.catch((err) => {
-				catchBad(err);
-				loading = false;
-			});
+		try {
+			await remove(selected);
+			good(`Successfully deleted '${selectedName}''.`);
+			updateSources();
+		} catch (err) {
+			catchBad(err);
+		}
+		loading = false;
 	};
 
 	$: menuOptions = [
@@ -76,7 +66,7 @@
 			label: 'Delete',
 			icon: Trash,
 			action: () => (showConfirmDelete = true),
-			disabled: selectedSources.length == 0
+			disabled: selected === undefined
 		}
 	];
 
@@ -109,12 +99,10 @@
 		{#each sources.sources as source}
 			<div class="w-1/2 sm:w-1/3 md:w-1/4 xl:w-1/5 2xl:w-1/6 p-2">
 				<FolderCard
-					active={$selected[source.id]}
+					active={selected === source.id}
 					onClick={() => {
-						selected.update((a) => {
-							a[source.id] = !a[source.id];
-							return a;
-						});
+						if (selected === source.id) selected = undefined;
+						else selected = source.id;
 					}}
 					onDoubleClick={() => routeToPage(`/library/${source.id}`, { subpath: '' })}
 					name={source.name}
@@ -128,6 +116,8 @@
 	</div>
 </PageTransitionWrapper>
 
+<ThumbnailQueueProgress />
+
 {#if showNewSource}
 	<NewSourceModal
 		onClose={() => {
@@ -139,8 +129,8 @@
 
 {#if showConfirmDelete}
 	<ConfirmModal
-		title="Delete Sources"
-		message={`Are you sure you want to delete ${selectedSources.length} source(s)?`}
+		title="Delete Source"
+		message={`Are you sure you want to delete '${selectedName}'`}
 		onClose={() => (showConfirmDelete = false)}
 		onConfirm={() => {
 			deleteSources();

@@ -5,6 +5,8 @@
 
 	import IconButton, { Variant } from '../button/IconButton.svelte';
 	import Close from '../icons/Close.svelte';
+	import { scale } from 'svelte/transition';
+	import { quintOut } from 'svelte/easing';
 
 	export let alert: Alert;
 
@@ -22,6 +24,7 @@
 </script>
 
 <div
+	transition:scale={{ duration: 200, easing: quintOut }}
 	class="w-full {severityCSS} flex flex-row items-center justify-between box-shadow rounded-lg px-3 py-3"
 >
 	<p class="ml-1">{alert.message}</p>

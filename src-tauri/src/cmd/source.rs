@@ -40,5 +40,6 @@ pub fn list_sources(handle: tauri::AppHandle) -> Result<Sources, AppError> {
 
 #[tauri::command]
 pub fn delete_source(id: &str, handle: tauri::AppHandle) -> Result<(), AppError> {
-    handle.source_ctrl(|ctrl| ctrl.delete(id))
+    handle.source_ctrl(|ctrl| ctrl.delete(id))?;
+    handle.fs_entry_ctrl(|ctrl| ctrl.delete_by_source_id(id))
 }

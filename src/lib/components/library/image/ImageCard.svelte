@@ -26,7 +26,7 @@
 		role="listitem"
 	>
 		<div
-			class="absolute top-0 h-full z-30 w-full ease-out duration-100 justify-around flex bg-gradient-to-b from-gray-900/70 to-gray-900/0 {eitherHover
+			class="absolute top-0 h-full z-30 w-full ease-out duration-200 justify-around flex bg-gradient-to-b from-gray-900/40 to-gray-900/0 {eitherHover
 				? 'opacity-100'
 				: 'opacity-0'}"
 		>
