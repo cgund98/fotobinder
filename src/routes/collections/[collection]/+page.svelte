@@ -28,6 +28,9 @@
 	import ConfirmModal from '$lib/components/layout/ConfirmModal.svelte';
 	import Plus from '$lib/components/icons/Plus.svelte';
 	import Trash from '$lib/components/icons/Trash.svelte';
+	import ProgressWrapper from '$lib/components/progress/ProgressWrapper.svelte';
+
+	let loading = false;
 
 	// Read inputs
 	export let data: PageData;
@@ -48,6 +51,12 @@
 	let selectedImages = new Set<string>();
 	let selectedFolders = writable<Set<string>>(new Set());
 
+	// Image details
+	let refreshImageDetails: () => Promise<void>;
+	let selSourceId = '';
+	let selRelativePath = '';
+	let selIdx = 0;
+
 	// Fetch entries
 	const folders = writable<Folder[]>([]);
 	const images = writable<Image[]>([]);
@@ -65,8 +74,9 @@
 		navEntries.set([{ label: 'My Collections', route: '/collections' }, ...entries]);
 	};
 
-	const fetchEntries = (collectionId: string) => {
-		const doFn = async () => {
+	const fetchEntries = async (collectionId: string) => {
+		loading = true;
+		try {
 			const subcollections = await listByParentId(collectionId);
 
 			// Parse folders
@@ -107,12 +117,14 @@
 			folders.set(newFolders);
 			images.set(newImages);
 			await updateNav(collectionId);
-		};
-		doFn().catch(catchBad);
+		} catch (err) {
+			catchBad(err);
+		}
+		loading = false;
 	};
 
 	// Initialize fields
-	$: fetchEntries(data.collectionId);
+	fetchEntries(data.collectionId);
 	$: imagesSelected = selectedImages.size > 0;
 	$: foldersSelected = $selectedFolders.size > 0;
 	$: noSelection = !imagesSelected && !foldersSelected;
@@ -194,6 +206,10 @@
 	const onConfirmReject: () => void = () => (showConfirm = false);
 </script>
 
+{#if loading}
+	<ProgressWrapper />
+{/if}
+
 <PageTransitionWrapper>
 	<PathHeader bind:path={$navEntries} />
 
@@ -273,7 +289,7 @@
 	{/if}
 
 	<div class="w-full flex flex-wrap mt-1">
-		{#each $images as image (image.id)}
+		{#each $images as image, idx (image.id)}
 			<div class="w-1/2 sm:w-1/3 md:w-1/4 xl:w-1/5 2xl:w-1/6 p-1">
 				<ImageCard
 					onChange={(checked) => {
@@ -284,6 +300,9 @@
 						selectedFolders.set(new Set());
 					}}
 					onView={() => {
+						selIdx = idx;
+						selSourceId = image.sourceId;
+						selRelativePath = image.relativePath;
 						showImageDetails = true;
 					}}
 					forceHover={imagesSelected}
@@ -302,8 +321,24 @@
 		onClose={() => {
 			showImageDetails = false;
 		}}
-		name="Mountain.jpg"
-		src="/image/mountain.jpg"
+		relativePath={selRelativePath}
+		sourceId={selSourceId}
+		onPrev={() => {
+			selIdx = selIdx - 1;
+			if (selIdx < 0) selIdx = $images.length - 1;
+			selRelativePath = $images[selIdx].relativePath;
+			selSourceId = $images[selIdx].sourceId;
+			refreshImageDetails();
+		}}
+		onNext={() => {
+			selIdx = selIdx + 1;
+			if (selIdx === $images.length) selIdx = 0;
+			selRelativePath = $images[selIdx].relativePath;
+			selSourceId = $images[selIdx].sourceId;
+			refreshImageDetails();
+		}}
+		bind:loading
+		bind:fetchDetails={refreshImageDetails}
 	/>
 {/if}
 

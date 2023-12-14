@@ -35,7 +35,7 @@
 				on:click={handleBgClick}
 			/>
 			<div class="px-2 py-2 w-full flex flex-row justify-between">
-				<div class={eitherHover ? 'opacity-100' : 'opacity-0'}>
+				<div class="">
 					<CheckBoxRound {onChange} active={checked} />
 				</div>
 

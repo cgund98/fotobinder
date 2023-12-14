@@ -18,6 +18,7 @@
 	import { appDataDir, join } from '@tauri-apps/api/path';
 	import { convertFileSrc } from '@tauri-apps/api/tauri';
 	import PageTransitionWrapper from '$lib/components/layout/PageTransitionWrapper.svelte';
+	import ProgressWrapper from '$lib/components/progress/ProgressWrapper.svelte';
 
 	interface Image {
 		id: string;
@@ -27,8 +28,16 @@
 		src: string;
 	}
 
+	let loading = false;
+
 	// Selection
 	let selectedImages = new Set<string>();
+
+	// Image details
+	let refreshImageDetails: () => Promise<void>;
+	let selSourceId = '';
+	let selRelativePath = '';
+	let selIdx = 0;
 
 	// Fetch entries
 	const images = writable<Image[]>([]);
@@ -50,8 +59,9 @@
 	];
 
 	// Fetch data
-	const fetchResults = () => {
-		const doFn = async () => {
+	const fetchResults = async () => {
+		loading = true;
+		try {
 			const rules = load();
 
 			// Parse included and excluded tags
@@ -87,9 +97,10 @@
 				})
 			);
 			images.set(newImages);
-		};
-
-		doFn().catch(catchBad);
+		} catch (err) {
+			catchBad(err);
+		}
+		loading = false;
 	};
 
 	fetchResults();
@@ -97,6 +108,10 @@
 	$: relativePaths = $images.filter((i) => selectedImages.has(i.id)).map((i) => i.relativePath);
 	$: sourceIds = $images.filter((i) => selectedImages.has(i.id)).map((i) => i.sourceId);
 </script>
+
+{#if loading}
+	<ProgressWrapper />
+{/if}
 
 <PageTransitionWrapper>
 	<PathHeader
@@ -134,7 +149,7 @@
 	<Separator className="my-2" />
 
 	<div class="w-full flex flex-wrap mt-1">
-		{#each $images as image (image.id)}
+		{#each $images as image, idx (image.id)}
 			<div class="w-1/2 sm:w-1/3 md:w-1/4 xl:w-1/5 2xl:w-1/6 p-1">
 				<ImageCard
 					onChange={(checked) => {
@@ -144,6 +159,9 @@
 						selectedImages = selectedImages;
 					}}
 					onView={() => {
+						selIdx = idx;
+						selSourceId = image.sourceId;
+						selRelativePath = image.relativePath;
 						showImageDetails = true;
 					}}
 					forceHover={imagesSelected}
@@ -161,8 +179,24 @@
 		onClose={() => {
 			showImageDetails = false;
 		}}
-		name="Mountain.jpg"
-		src="/image/mountain.jpg"
+		sourceId={selSourceId}
+		relativePath={selRelativePath}
+		onPrev={() => {
+			selIdx = selIdx - 1;
+			if (selIdx < 0) selIdx = $images.length - 1;
+			selRelativePath = $images[selIdx].relativePath;
+			selSourceId = $images[selIdx].sourceId;
+			refreshImageDetails();
+		}}
+		onNext={() => {
+			selIdx = selIdx + 1;
+			if (selIdx === $images.length) selIdx = 0;
+			selRelativePath = $images[selIdx].relativePath;
+			selSourceId = $images[selIdx].sourceId;
+			refreshImageDetails();
+		}}
+		bind:loading
+		bind:fetchDetails={refreshImageDetails}
 	/>
 {/if}
 

@@ -14,6 +14,8 @@
 	}}
 >
 	<Check
-		className="fill-bg-gray ease-out duration-200  h-[15px] w-[15px] {active ? '' : 'opacity-0'}"
+		className="fill-bg-gray ease-out duration-200  h-[15px] w-[15px] {active
+			? 'opacity-100'
+			: 'opacity-0'}"
 	/>
 </button>

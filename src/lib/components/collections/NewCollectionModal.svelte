@@ -72,6 +72,12 @@
 	$: valid = validate(name, parentId);
 </script>
 
+<svelte:window
+	on:keydown={(event) => {
+		if (event.key === 'Escape') onClose();
+	}}
+/>
+
 <Modal>
 	<div class="flex flex-row justify-between items-center">
 		<h1 class="text-lg font-bold pb-1">New Collection</h1>

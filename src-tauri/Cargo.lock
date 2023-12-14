@@ -856,6 +856,7 @@ dependencies = [
 name = "fotobinder"
 version = "0.0.1"
 dependencies = [
+ "base64 0.21.5",
  "chrono",
  "deadqueue",
  "fast_image_resize",

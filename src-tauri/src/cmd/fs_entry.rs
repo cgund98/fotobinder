@@ -1,5 +1,6 @@
 use crate::{
     api::fs_entry::{FsEntries, ScanResults},
+    data::fs_entry::entity,
     errors::AppError,
     state::ServiceAccess,
 };
@@ -58,4 +59,25 @@ pub fn list_fs_entries_by_tags(
 #[tauri::command(async)]
 pub fn get_thumbnail_queue_size(handle: tauri::AppHandle) -> Result<usize, AppError> {
     handle.fs_entry_ctrl(|ctrl| ctrl.get_queue_size())
+}
+
+#[tauri::command(async)]
+pub fn get_fs_entry_by_ids(
+    source_id: &str,
+    relative_path: &str,
+    handle: tauri::AppHandle,
+) -> Result<entity::FsEntry, AppError> {
+    handle.fs_entry_ctrl(|ctrl| ctrl.get_by_ids(relative_path, source_id))
+}
+
+#[tauri::command(async)]
+pub fn get_fs_entry_image(
+    source_id: &str,
+    relative_path: &str,
+    handle: tauri::AppHandle,
+) -> Result<String, AppError> {
+    // Get source
+    let source = handle.source_ctrl(|ctrl| ctrl.get_by_id(source_id))?;
+
+    handle.fs_entry_ctrl(|ctrl| ctrl.get_image(relative_path, &source.id, &source.path))
 }

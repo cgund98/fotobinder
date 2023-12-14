@@ -71,3 +71,17 @@ export const listByTags = async (includes: string[], excludes: string[]) => {
 
 	return entries;
 };
+
+export const get = async (relativePath: string, sourceId: string) => {
+	return (await invoke('get_fs_entry_by_ids', {
+		relativePath,
+		sourceId
+	})) as FsEntry;
+};
+
+export const getImage = async (relativePath: string, sourceId: string) => {
+	return (await invoke('get_fs_entry_image', {
+		relativePath,
+		sourceId
+	})) as string;
+};

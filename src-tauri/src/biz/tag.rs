@@ -42,4 +42,12 @@ impl Controller {
     pub fn delete(&self, id: &str) -> Result<(), AppError> {
         self.repo.delete(id)
     }
+
+    pub fn list_by_relative_path(
+        &self,
+        relative_path: &str,
+        source_id: &str,
+    ) -> Result<Vec<entity::Tag>, crate::errors::AppError> {
+        self.repo.list_by_relative_path(relative_path, source_id)
+    }
 }

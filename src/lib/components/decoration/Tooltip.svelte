@@ -2,6 +2,7 @@
 	import { quintOut } from 'svelte/easing';
 	import { scale } from 'svelte/transition';
 
+	export let className = '';
 	export let title = '';
 	export let delay = 750;
 	let show = false;
@@ -56,7 +57,7 @@
 	on:mouseover={mouseOver}
 	on:mouseleave={mouseLeave}
 	on:mousemove={mouseMove}
-	class="relative"
+	class="relative {className}"
 >
 	<slot />
 </div>
@@ -65,7 +66,7 @@
 	<div
 		transition:scale={{ duration: 100, easing: quintOut }}
 		style="{vertCSS}; {horCSS}"
-		class="fixed box-shadow rounded-md px-2 py-1 text-sm bg-teal-900 z-50 text-gray-100"
+		class="fixed box-shadow rounded-md !font-medium px-2 py-1 text-sm bg-teal-900 z-[150] text-gray-100"
 	>
 		{title}
 	</div>

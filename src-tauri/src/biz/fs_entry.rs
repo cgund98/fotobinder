@@ -4,6 +4,8 @@ use std::{
     sync::Arc,
 };
 
+use base64::{engine::general_purpose, Engine as _};
+
 use crate::{
     api::fs_entry::ScanResults,
     data::fs_entry::{entity, repo::Repo},
@@ -259,5 +261,33 @@ impl Controller {
 
     pub fn delete_by_source_id(&self, source_id: &str) -> Result<(), AppError> {
         self.repo.delete_by_source_id(source_id)
+    }
+
+    pub fn get_by_ids(
+        &self,
+        relative_path: &str,
+        source_id: &str,
+    ) -> Result<entity::FsEntry, AppError> {
+        // Fetch entry
+        self.repo.get_by_ids(relative_path, source_id)
+    }
+
+    pub fn get_image(
+        &self,
+        relative_path: &str,
+        source_id: &str,
+        root_dir: &str,
+    ) -> Result<String, AppError> {
+        // Fetch entry
+        let entry = self.repo.get_by_ids(relative_path, source_id)?;
+
+        // Parse image path
+        let image_path = image::gen_origin_path(&entry, root_dir);
+        let bytes = std::fs::read(image_path)?;
+
+        // Base64 encode image
+        let b64 = general_purpose::STANDARD.encode(bytes);
+
+        Ok(b64)
     }
 }

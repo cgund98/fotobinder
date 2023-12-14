@@ -172,6 +172,12 @@
 	refreshTags();
 </script>
 
+<svelte:window
+	on:keydown={(event) => {
+		if (!showNewTag && event.key === 'Escape') onClose();
+	}}
+/>
+
 <Modal>
 	<div class="overflow-y-scroll h-full">
 		<div class="flex flex-row justify-between items-center">

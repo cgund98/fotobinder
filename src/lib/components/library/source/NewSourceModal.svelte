@@ -65,6 +65,12 @@
 	$: valid = validate(name, path, type);
 </script>
 
+<svelte:window
+	on:keydown={(event) => {
+		if (!loading && event.key === 'Escape') onClose();
+	}}
+/>
+
 <Modal>
 	<div class="flex flex-row justify-between items-center">
 		<h1 class="text-lg font-bold pb-1">New Library Source</h1>

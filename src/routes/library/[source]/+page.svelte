@@ -55,6 +55,11 @@
 	let selectedImages = new Set<string>();
 	let selectedFolders = writable<Set<string>>(new Set());
 
+	let refreshImageDetails: () => Promise<void>;
+	let selSourceId = '';
+	let selRelativePath = '';
+	let selIdx = 0;
+
 	// Fetch entries
 	const folders = writable<Folder[]>([]);
 	const images = writable<Image[]>([]);
@@ -301,7 +306,7 @@
 	{/if}
 
 	<div class="w-full flex flex-wrap mt-1">
-		{#each $images as image (image.id)}
+		{#each $images as image, idx (image.id)}
 			<div class="w-1/2 sm:w-1/3 md:w-1/4 xl:w-1/5 2xl:w-1/6 p-1">
 				<ImageCard
 					onChange={(checked) => {
@@ -312,6 +317,9 @@
 						selectedFolders.set(new Set());
 					}}
 					onView={() => {
+						selIdx = idx;
+						selSourceId = image.sourceId;
+						selRelativePath = image.relativePath;
 						showImageDetails = true;
 					}}
 					forceHover={imagesSelected}
@@ -343,8 +351,24 @@
 		onClose={() => {
 			showImageDetails = false;
 		}}
-		name="Mountain.jpg"
-		src="/image/mountain.jpg"
+		relativePath={selRelativePath}
+		sourceId={selSourceId}
+		onPrev={() => {
+			selIdx = selIdx - 1;
+			if (selIdx < 0) selIdx = $images.length - 1;
+			selRelativePath = $images[selIdx].relativePath;
+			selSourceId = $images[selIdx].sourceId;
+			refreshImageDetails();
+		}}
+		onNext={() => {
+			selIdx = selIdx + 1;
+			if (selIdx === $images.length) selIdx = 0;
+			selRelativePath = $images[selIdx].relativePath;
+			selSourceId = $images[selIdx].sourceId;
+			refreshImageDetails();
+		}}
+		bind:loading
+		bind:fetchDetails={refreshImageDetails}
 	/>
 {/if}
 

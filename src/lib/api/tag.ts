@@ -22,6 +22,12 @@ export const list = async (): Promise<Tags> => {
 	return tags;
 };
 
+export const listByRelativePath = async (relativePath: string, sourceId: string): Promise<Tags> => {
+	const tags = (await invoke('list_tags_by_relative_path', { relativePath, sourceId })) as Tags;
+
+	return tags;
+};
+
 export const get = async (id: string): Promise<Tag> => {
 	const tag = (await invoke('get_tag', { id })) as Tag;
 

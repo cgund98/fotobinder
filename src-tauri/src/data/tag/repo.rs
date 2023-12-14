@@ -70,6 +70,39 @@ impl Repo {
         Ok(entries)
     }
 
+    pub fn list_by_relative_path(
+        &self,
+        relative_path: &str,
+        source_id: &str,
+    ) -> Result<Vec<entity::Tag>, crate::errors::AppError> {
+        let pool = self.pool.get()?;
+        let mut stmt = pool.prepare(
+            "\
+        SELECT DISTINCT tags.* from tags \
+        INNER JOIN image_tags it on it.tag_id = tag_id \
+        WHERE it.source_id = ?1 AND it.relative_path  = ?2 \
+        ",
+        )?;
+
+        // Map results
+        let ent_iter = stmt.query_map([source_id, relative_path], |row| {
+            Ok(entity::DbTag {
+                id: row.get(0)?,
+                parent_id: row.get(1)?,
+                name: row.get(2)?,
+            })
+        })?;
+
+        let mut entries: Vec<entity::Tag> = Vec::new();
+        for db_entry in ent_iter {
+            let entry = db_entry?;
+
+            entries.push(entry);
+        }
+
+        Ok(entries)
+    }
+
     pub fn delete(&self, id: &str) -> Result<(), crate::errors::AppError> {
         let pool = self.pool.get()?;
         pool.execute("DELETE FROM tags WHERE id = ?1", [id])?;
