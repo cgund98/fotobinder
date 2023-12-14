@@ -20,7 +20,7 @@
 
 	let lastClicked = 0;
 
-	const DOUBLE_CLICK_THRESHOLD = 200;
+	const DOUBLE_CLICK_THRESHOLD = 300;
 </script>
 
 <button

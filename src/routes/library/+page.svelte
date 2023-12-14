@@ -15,7 +15,7 @@
 	import PageTransitionWrapper from '$lib/components/layout/PageTransitionWrapper.svelte';
 	import ProgressWrapper from '$lib/components/progress/ProgressWrapper.svelte';
 	import ThumbnailQueueProgress from '$lib/components/progress/ThumbnailQueueProgress.svelte';
-	import SizeTransition from '$lib/components/animation/SizeTransition.svelte';
+	import { sources as navSources } from '$lib/store/nav';
 
 	let showNewSource = false;
 	let loading = false;
@@ -30,6 +30,7 @@
 			.then((res) => {
 				// Update sources
 				sources = { sources: res.sources.sort((a, b) => a.name.localeCompare(b.name)) };
+				navSources.set(res.sources.sort((a, b) => a.name.localeCompare(b.name)));
 
 				// Update selection
 				const newIds = new Set(sources.sources.map((s) => s.id));

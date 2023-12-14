@@ -13,6 +13,7 @@
 	"dependencies": {
 		"@tauri-apps/api": "^1.5.1",
 		"@types/path-browserify": "^1.0.2",
+		"@zoom-image/svelte": "^0.2.4",
 		"path-browserify": "^1.0.1",
 		"sad": "^1.8.1",
 		"svelte-lazy": "^1.2.5",

@@ -2,11 +2,13 @@
 	import { page } from '$app/stores';
 	import type { ComponentType } from 'svelte';
 	import ChevronDown from '../../icons/ChevronDown.svelte';
+	import IconButton, { Variant } from '$lib/components/button/IconButton.svelte';
 
 	export let title: string;
 	export let href: string;
 	export let collapseable: boolean = false;
 	export let icon: ComponentType;
+	export let showChildren = false;
 
 	$: active = $page.url.pathname.startsWith(href);
 
@@ -26,7 +28,15 @@
 	</a>
 	<div>
 		{#if collapseable}
-			<ChevronDown className="text-gray-600 w-[20px]" />
+			<IconButton
+				label={showChildren ? 'Collapse children' : 'Expand children'}
+				icon={ChevronDown}
+				variant={Variant.Embedded}
+				className="text-gray-600 duration-200 ease-out {showChildren ? 'rotate-180' : ''}"
+				onClick={() => (showChildren = !showChildren)}
+			/>
 		{/if}
 	</div>
 </div>
+
+<slot />

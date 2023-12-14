@@ -19,6 +19,7 @@
 	import { convertFileSrc } from '@tauri-apps/api/tauri';
 	import PageTransitionWrapper from '$lib/components/layout/PageTransitionWrapper.svelte';
 	import ProgressWrapper from '$lib/components/progress/ProgressWrapper.svelte';
+	import Tag from '$lib/components/icons/Tag.svelte';
 
 	interface Image {
 		id: string;
@@ -47,6 +48,7 @@
 	// Modals
 	let showImageDetails = false;
 	let showAddToCollection = false;
+	let showEditTags = false;
 
 	// Menu options
 	$: menuOptions = [
@@ -142,6 +144,16 @@
 		</div>
 
 		<div class="flex flex-row space-x-3 items-center">
+			<Button
+				title="Modify Tags"
+				className="disabled:bg-teal-700"
+				onClick={() => {
+					showEditTags = true;
+				}}
+				disabled={selectedImages.size === 0}
+			>
+				<Tag className="w-[15px] -mt-[1px]" />
+			</Button>
 			<Menu label="Actions" options={menuOptions} position="right" />
 		</div>
 	</div>
@@ -206,6 +218,17 @@
 		{sourceIds}
 		onClose={() => {
 			showAddToCollection = false;
+		}}
+	/>
+{/if}
+
+{#if showEditTags}
+	<EditTagsModal
+		{relativePaths}
+		{sourceIds}
+		isImage
+		onClose={() => {
+			showEditTags = false;
 		}}
 	/>
 {/if}

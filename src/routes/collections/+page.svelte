@@ -12,6 +12,7 @@
 	import { catchBad, good } from '$lib/store/alerts';
 	import ConfirmModal from '$lib/components/layout/ConfirmModal.svelte';
 	import Menu from '$lib/components/menu/Menu.svelte';
+	import { collections } from '$lib/store/nav';
 
 	let folders: { id: string; name: string }[] = [];
 
@@ -19,6 +20,7 @@
 		const doFn = async () => {
 			const res = await listByParentId(null);
 			folders = res.collections.map((col) => ({ id: col.id, name: col.name }));
+			collections.set(res.collections.sort((a, b) => a.name.localeCompare(b.name)));
 		};
 
 		doFn().catch(catchBad);

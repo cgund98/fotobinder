@@ -79,7 +79,7 @@ impl Repo {
         let mut stmt = pool.prepare(
             "\
         SELECT DISTINCT tags.* from tags \
-        INNER JOIN image_tags it on it.tag_id = tag_id \
+        INNER JOIN image_tags it on it.tag_id = tags.id \
         WHERE it.source_id = ?1 AND it.relative_path  = ?2 \
         ",
         )?;
