@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { useZoomImageWheel } from '@zoom-image/svelte';
+	import { fade } from 'svelte/transition';
+	import { quintOut } from 'svelte/easing';
 
 	export let src: string;
 	export let height: number;
@@ -40,6 +42,8 @@
 	$: setDimensions();
 </script>
 
-<div bind:this={container}>
-	<img class="block" style:width={imgWidth} style:height={imgHeight} alt="Large Pic" {src} />
+<div transition:fade={{ duration: 150, easing: quintOut }}>
+	<div bind:this={container}>
+		<img class="block" style:width={imgWidth} style:height={imgHeight} alt="Large Pic" {src} />
+	</div>
 </div>

@@ -14,6 +14,16 @@ pub fn get_tag(id: &str, handle: tauri::AppHandle) -> Result<entity::Tag, AppErr
     handle.tag_ctrl(|ctrl| ctrl.get_by_id(id))
 }
 
+#[tauri::command]
+pub fn update_tag(
+    id: &str,
+    name: &str,
+    parent_id: Option<&str>,
+    handle: tauri::AppHandle,
+) -> Result<entity::Tag, AppError> {
+    handle.tag_ctrl(|ctrl| ctrl.update_by_id(id, name, parent_id))
+}
+
 #[tauri::command(async)]
 pub fn list_tags(handle: tauri::AppHandle) -> Result<Tags, AppError> {
     handle.tag_ctrl(|ctrl| ctrl.list()).map(Tags::from)

@@ -34,6 +34,12 @@ export const get = async (id: string): Promise<Tag> => {
 	return tag;
 };
 
+export const update = async (id: string, name: string, parentId: string | null): Promise<Tag> => {
+	const tag = (await invoke('update_tag', { id, name, parentId })) as Tag;
+
+	return tag;
+};
+
 export const remove = async (id: string): Promise<Tag> => {
 	const tag = (await invoke('delete_tag', { id })) as Tag;
 

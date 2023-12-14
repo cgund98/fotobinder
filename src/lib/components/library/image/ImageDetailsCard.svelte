@@ -1,16 +1,16 @@
 <script lang="ts">
 	import path from 'path-browserify';
 
-	import Badge from '../../decoration/Badge.svelte';
-	import Separator from '../../decoration/Separator.svelte';
-	import Close from '../../icons/Close.svelte';
-	import Backdrop from '../../layout/Backdrop.svelte';
-	import Pencil from '../../icons/Pencil.svelte';
-	import IconButton, { Variant } from '../../button/IconButton.svelte';
-	import FolderSolid from '../../icons/FolderSolid.svelte';
-	import Tag from '../../icons/Tag.svelte';
-	import Clipboard from '../../icons/Clipboard.svelte';
-	import ChevronDown from '../../icons/ChevronDown.svelte';
+	import Badge from '$lib/components/decoration/Badge.svelte';
+	import Separator from '$lib/components/decoration/Separator.svelte';
+	import Close from '$lib/components/icons/Close.svelte';
+	import Backdrop from '$lib/components/layout/Backdrop.svelte';
+	import Pencil from '$lib/components/icons/Pencil.svelte';
+	import IconButton, { Variant } from '$lib/components/button/IconButton.svelte';
+	import FolderSolid from '$lib/components/icons/FolderSolid.svelte';
+	import Tag from '$lib/components/icons/Tag.svelte';
+	import Clipboard from '$lib/components/icons/Clipboard.svelte';
+	import ChevronDown from '$lib/components/icons/ChevronDown.svelte';
 	import { get, type FsEntry, getImage } from '$lib/api/fs_entry';
 	import { get as getSource, type Source } from '$lib/api/source';
 	import { listByRelativePath, type Tags } from '$lib/api/tag';
@@ -31,15 +31,29 @@
 	let tags: undefined | Tags;
 	let source: undefined | Source;
 
+	let name = '';
+	let dimensions = [0, 0];
+	let additionalFields = entry ? entry.additional_fields : [];
+
 	export let onClose: () => void = () => {};
 	export let onNext: () => void = () => {};
 	export let onPrev: () => void = () => {};
 
 	// Fetch data
-	export const fetchDetails = async () => {
+	export const fetchDetails = async (relativePath: string, sourceId: string) => {
 		loading = true;
 		try {
 			entry = await get(relativePath, sourceId);
+			additionalFields = entry.additional_fields;
+			dimensions = additionalFields.reduce(
+				(prev, field) =>
+					field.label === 'Size' ? field.value.split('x').map((x) => parseInt(x, 10)) : prev,
+				[1920, 1080]
+			);
+
+			let parts = entry?.relative_path.split(path.sep);
+			name = parts ? parts[parts.length - 1] : '';
+
 			source = await getSource(sourceId);
 			tags = await listByRelativePath(relativePath, sourceId);
 			image = await getImage(relativePath, sourceId);
@@ -67,26 +81,14 @@
 		good('Copied path to clipboard.');
 	};
 
-	fetchDetails();
+	fetchDetails(relativePath, sourceId);
 
 	// Derive additional fields
-	$: parts = entry?.relative_path.split(path.sep);
-	$: name = parts ? parts[parts.length - 1] : '';
-
-	$: additionalFields = entry ? entry.additional_fields : [];
-	$: dimensions = additionalFields.reduce(
-		(prev, field) =>
-			field.label === 'Size' ? field.value.split('x').map((x) => parseInt(x, 10)) : prev,
-		[1920, 1080]
-	);
 	$: tagElements = tags ? tags.tags : [];
 
 	// Modals
 	let showEditTags = false;
 	let showAddToCollection = false;
-
-	let imageWidth: number;
-	let imageHeight: number;
 </script>
 
 <svelte:window
@@ -107,13 +109,13 @@
 		>
 			<div class="bg-gray-900">
 				<div class="h-full relative">
-					{#if image.length > 0}
+					{#key image}
 						<ImageZoom
 							width={dimensions[0]}
 							height={dimensions[1]}
-							src={`data:image/${entry?.image_type};base64,${image}`}
+							src={`data:image/${entry?.image_type.toLowerCase()};base64,${image}`}
 						/>
-					{/if}
+					{/key}
 					<div class="absolute w-full flex justify-around bottom-4 z-20 ease-out">
 						<div class="flex bg-gray-700 space-x-2 rounded-lg drop-shadow ease-out">
 							<IconButton

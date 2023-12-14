@@ -13,6 +13,8 @@
 	import ConfirmModal from '$lib/components/layout/ConfirmModal.svelte';
 	import Menu from '$lib/components/menu/Menu.svelte';
 	import { collections } from '$lib/store/nav';
+	import EditCollectionModal from '$lib/components/collections/EditCollectionModal.svelte';
+	import Pencil from '$lib/components/icons/Pencil.svelte';
 
 	let folders: { id: string; name: string }[] = [];
 
@@ -29,13 +31,20 @@
 	fetchCollections();
 
 	let showNewCollection = false;
+	let showEditCollection = false;
 
 	let selectedCollection: string | undefined;
 
 	// Menu options
 	$: menuOptions = [
 		{
-			label: 'Delete Collections',
+			label: 'Edit Collection',
+			icon: Pencil,
+			action: () => (showEditCollection = true),
+			disabled: !selectedCollection
+		},
+		{
+			label: 'Delete Collection',
 			icon: Trash,
 			action: () => {
 				const collectionName = folders.filter((f) => f.id === selectedCollection)[0].name;
@@ -118,6 +127,16 @@
 	<NewCollectionModal
 		onClose={() => {
 			showNewCollection = false;
+			fetchCollections();
+		}}
+	/>
+{/if}
+
+{#if showEditCollection}
+	<EditCollectionModal
+		collectionId={selectedCollection || ''}
+		onClose={() => {
+			showEditCollection = false;
 			fetchCollections();
 		}}
 	/>

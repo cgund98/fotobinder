@@ -29,6 +29,8 @@
 	import Plus from '$lib/components/icons/Plus.svelte';
 	import Trash from '$lib/components/icons/Trash.svelte';
 	import ProgressWrapper from '$lib/components/progress/ProgressWrapper.svelte';
+	import Pencil from '$lib/components/icons/Pencil.svelte';
+	import EditCollectionModal from '$lib/components/collections/EditCollectionModal.svelte';
 
 	let loading = false;
 
@@ -52,7 +54,7 @@
 	let selectedFolders = writable<Set<string>>(new Set());
 
 	// Image details
-	let refreshImageDetails: () => Promise<void>;
+	let refreshImageDetails: (relativePath: string, sourceId: string) => Promise<void>;
 	let selSourceId = '';
 	let selRelativePath = '';
 	let selIdx = 0;
@@ -129,8 +131,16 @@
 	$: foldersSelected = $selectedFolders.size > 0;
 	$: noSelection = !imagesSelected && !foldersSelected;
 
+	let showEditCollection = false;
+
 	// Menu options
 	$: menuOptions = [
+		{
+			label: 'Edit Collection',
+			icon: Pencil,
+			action: () => (showEditCollection = true),
+			disabled: $selectedFolders.size !== 1
+		},
 		{
 			label: 'Add to Collection',
 			icon: Plus,
@@ -276,7 +286,6 @@
 					}}
 					active={$selectedFolders.has(folder.id)}
 					onDoubleClick={() => {
-						console.log(`/collections/${folder.id}`);
 						routeToPage(`/collections/${folder.id}`);
 					}}
 				/>
@@ -328,14 +337,14 @@
 			if (selIdx < 0) selIdx = $images.length - 1;
 			selRelativePath = $images[selIdx].relativePath;
 			selSourceId = $images[selIdx].sourceId;
-			refreshImageDetails();
+			refreshImageDetails(selRelativePath, selSourceId);
 		}}
 		onNext={() => {
 			selIdx = selIdx + 1;
 			if (selIdx === $images.length) selIdx = 0;
 			selRelativePath = $images[selIdx].relativePath;
 			selSourceId = $images[selIdx].sourceId;
-			refreshImageDetails();
+			refreshImageDetails(selRelativePath, selSourceId);
 		}}
 		bind:loading
 		bind:fetchDetails={refreshImageDetails}
@@ -369,5 +378,15 @@
 		message={confirmMessage}
 		onClose={onConfirmReject}
 		onConfirm={onConfirmAccept}
+	/>
+{/if}
+
+{#if showEditCollection}
+	<EditCollectionModal
+		collectionId={[...$selectedFolders][0] || ''}
+		onClose={() => {
+			showEditCollection = false;
+			fetchEntries(data.collectionId);
+		}}
 	/>
 {/if}

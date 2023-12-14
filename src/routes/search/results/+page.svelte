@@ -35,7 +35,7 @@
 	let selectedImages = new Set<string>();
 
 	// Image details
-	let refreshImageDetails: () => Promise<void>;
+	let refreshImageDetails: (relativePath: string, sourceId: string) => Promise<void>;
 	let selSourceId = '';
 	let selRelativePath = '';
 	let selIdx = 0;
@@ -76,8 +76,6 @@
 
 			// Fetch tags
 			const res = await listByTags(includes, excludes);
-
-			console.log(includes, excludes);
 
 			// Map thumbnail paths to asset url
 			const dataDir = await appDataDir();
@@ -198,14 +196,14 @@
 			if (selIdx < 0) selIdx = $images.length - 1;
 			selRelativePath = $images[selIdx].relativePath;
 			selSourceId = $images[selIdx].sourceId;
-			refreshImageDetails();
+			refreshImageDetails(selRelativePath, selSourceId);
 		}}
 		onNext={() => {
 			selIdx = selIdx + 1;
 			if (selIdx === $images.length) selIdx = 0;
 			selRelativePath = $images[selIdx].relativePath;
 			selSourceId = $images[selIdx].sourceId;
-			refreshImageDetails();
+			refreshImageDetails(selRelativePath, selSourceId);
 		}}
 		bind:loading
 		bind:fetchDetails={refreshImageDetails}

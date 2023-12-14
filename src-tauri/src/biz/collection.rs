@@ -50,6 +50,27 @@ impl Controller {
         self.repo.get_by_id(id)
     }
 
+    pub fn update_by_id(
+        &self,
+        id: &str,
+        name: &str,
+        parent_id: Option<&str>,
+    ) -> Result<entity::Collection, AppError> {
+        // Fetch collection
+        let mut col = self.repo.get_by_id(id)?;
+
+        // Update attributes
+        col.name = String::from(name);
+        if let Some(p) = parent_id {
+            col.parent_id = Some(String::from(p));
+        } else {
+            col.parent_id = None;
+        }
+
+        // Save collection
+        self.repo.save(col)
+    }
+
     pub fn delete(&self, id: &str) -> Result<(), AppError> {
         self.repo.delete(id)
     }

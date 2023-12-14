@@ -14,6 +14,7 @@
 	import Plus from '$lib/components/icons/Plus.svelte';
 	import NewTagModal from '$lib/components/tags/NewTagModal.svelte';
 	import PageTransitionWrapper from '$lib/components/layout/PageTransitionWrapper.svelte';
+	import EditTagModal from '$lib/components/tags/EditTagModal.svelte';
 
 	let tags = writable<Tag[]>([]);
 
@@ -45,6 +46,9 @@
 	refreshTags();
 
 	let showNewTag = false;
+	let showEditTag = false;
+
+	let selTagId = '';
 </script>
 
 <PageTransitionWrapper>
@@ -83,7 +87,15 @@
 				</div>
 				<div class="flex flex-row justify-end space-x-2">
 					<div class="flex flex-col justify-around">
-						<IconButton icon={Pencil} variant={IconVariant.Embedded} label="Edit Tag" />
+						<IconButton
+							icon={Pencil}
+							variant={IconVariant.Embedded}
+							onClick={() => {
+								selTagId = tag.id;
+								showEditTag = true;
+							}}
+							label="Edit Tag"
+						/>
 					</div>
 					<div class="flex flex-col justify-around">
 						<IconButton
@@ -116,7 +128,15 @@
 								</div>
 								<div class="flex flex-row justify-end space-x-2">
 									<div class="flex flex-col justify-around">
-										<IconButton icon={Pencil} variant={IconVariant.Embedded} label="Edit Tag" />
+										<IconButton
+											icon={Pencil}
+											variant={IconVariant.Embedded}
+											onClick={() => {
+												selTagId = child.id;
+												showEditTag = true;
+											}}
+											label="Edit Tag"
+										/>
 									</div>
 									<div class="flex flex-col justify-around">
 										<IconButton
@@ -157,6 +177,16 @@
 	<NewTagModal
 		onClose={() => {
 			showNewTag = false;
+			refreshTags();
+		}}
+	/>
+{/if}
+
+{#if showEditTag}
+	<EditTagModal
+		tagId={selTagId}
+		onClose={() => {
+			showEditTag = false;
 			refreshTags();
 		}}
 	/>

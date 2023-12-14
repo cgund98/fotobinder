@@ -5,15 +5,17 @@
 	import TextInput from '../input/TextInput.svelte';
 	import Button, { Variant } from '../button/Button.svelte';
 	import IconButton, { Variant as IconVariant } from '../button/IconButton.svelte';
-	import Plus from '../icons/Plus.svelte';
 	import Trash from '../icons/Trash.svelte';
 	import SearchBox from '../input/SearchBox.svelte';
-	import { create, list, type Tag } from '$lib/api/tag';
+	import { get, list, update, type Tag } from '$lib/api/tag';
 	import { catchBad, good } from '$lib/store/alerts';
 	import { writable } from 'svelte/store';
+	import Check from '../icons/Check.svelte';
 
 	export let onClose: () => void = () => {};
 	let tags = writable<Tag[]>([]);
+
+	export let tagId: string;
 
 	const refreshTags = () => {
 		list()
@@ -31,6 +33,7 @@
 	const buildOptions = (tags: Tag[]) => {
 		const options = tags
 			.filter((tag) => tag.parent_id === null)
+			.filter((tag) => tag.id !== tagId)
 			.map((tag) => ({
 				label: tag.name,
 				value: tag.id
@@ -50,6 +53,15 @@
 		return validName && validParentTag;
 	};
 
+	// Fetch tag
+	const fetchTag = async () => {
+		const tag = await get(tagId);
+		name = tag.name;
+		parentId = tag.parent_id || undefined;
+	};
+
+	fetchTag();
+
 	// Reactive variables
 	$: searchOptions = buildOptions($tags);
 	$: valid = validate(name, parentId);
@@ -63,7 +75,7 @@
 
 <Modal>
 	<div class="flex flex-row justify-between items-center">
-		<h1 class="text-lg font-bold pb-1">New Tag</h1>
+		<h1 class="text-lg font-bold pb-1">Edit Tag</h1>
 		<div role="button" class="-mt-1">
 			<IconButton
 				onClick={onClose}
@@ -101,18 +113,18 @@
 		<div class="flex space-x-4">
 			<Button
 				variant={Variant.Primary}
-				title="Create"
+				title="Save"
 				disabled={!valid}
 				onClick={() => {
-					create(name, parentId || null)
+					update(tagId, name, parentId || null)
 						.then(() => {
-							good(`Created tag '${name}'.`);
+							good(`Updated tag '${name}'.`);
 							onClose();
 						})
 						.catch(catchBad);
 				}}
 			>
-				<Plus className="w-[16px] -mt-[1px]" />
+				<Check className="w-[16px] -mt-[1px]" />
 			</Button>
 		</div>
 	</div>

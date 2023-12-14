@@ -55,7 +55,7 @@
 	let selectedImages = new Set<string>();
 	let selectedFolders = writable<Set<string>>(new Set());
 
-	let refreshImageDetails: () => Promise<void>;
+	let refreshImageDetails: (relativePath: string, sourceId: string) => Promise<void>;
 	let selSourceId = '';
 	let selRelativePath = '';
 	let selIdx = 0;
@@ -358,14 +358,14 @@
 			if (selIdx < 0) selIdx = $images.length - 1;
 			selRelativePath = $images[selIdx].relativePath;
 			selSourceId = $images[selIdx].sourceId;
-			refreshImageDetails();
+			refreshImageDetails(selRelativePath, selSourceId);
 		}}
 		onNext={() => {
 			selIdx = selIdx + 1;
 			if (selIdx === $images.length) selIdx = 0;
 			selRelativePath = $images[selIdx].relativePath;
 			selSourceId = $images[selIdx].sourceId;
-			refreshImageDetails();
+			refreshImageDetails(selRelativePath, selSourceId);
 		}}
 		bind:loading
 		bind:fetchDetails={refreshImageDetails}

@@ -39,6 +39,26 @@ impl Controller {
         self.repo.get_by_id(id)
     }
 
+    pub fn update_by_id(
+        &self,
+        id: &str,
+        name: &str,
+        parent_id: Option<&str>,
+    ) -> Result<entity::Tag, AppError> {
+        // Fetch task
+        let mut task = self.get_by_id(id)?;
+
+        // Update fields
+        task.name = String::from(name);
+        if let Some(p) = parent_id {
+            task.parent_id = Some(String::from(p));
+        } else {
+            task.parent_id = None;
+        }
+
+        self.repo.save(task)
+    }
+
     pub fn delete(&self, id: &str) -> Result<(), AppError> {
         self.repo.delete(id)
     }

@@ -34,6 +34,16 @@ export const get = async (id: string): Promise<Collection> => {
 	return collection;
 };
 
+export const update = async (
+	id: string,
+	name: string,
+	parentId: string | null
+): Promise<Collection> => {
+	const collection = (await invoke('update_collection', { id, name, parentId })) as Collection;
+
+	return collection;
+};
+
 export const remove = async (id: string): Promise<Collection> => {
 	const collection = (await invoke('delete_collection', { id })) as Collection;
 

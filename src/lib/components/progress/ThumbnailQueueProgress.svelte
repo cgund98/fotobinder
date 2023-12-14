@@ -29,7 +29,6 @@
 		if (poller) clearInterval(poller);
 		get();
 		try {
-			console.log('ping!');
 			const size = await getThumbnailQueueSize();
 
 			if (size === 0) {

@@ -16,6 +16,16 @@ pub fn get_collection(id: &str, handle: tauri::AppHandle) -> Result<entity::Coll
     handle.collection_ctrl(|ctrl| ctrl.get_by_id(id))
 }
 
+#[tauri::command]
+pub fn update_collection(
+    id: &str,
+    name: &str,
+    parent_id: Option<&str>,
+    handle: tauri::AppHandle,
+) -> Result<entity::Collection, AppError> {
+    handle.collection_ctrl(|ctrl| ctrl.update_by_id(id, name, parent_id))
+}
+
 #[tauri::command(async)]
 pub fn list_collections(handle: tauri::AppHandle) -> Result<Collections, AppError> {
     handle
