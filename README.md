@@ -19,6 +19,11 @@ _Fotobinder is a free desktop app that helps you organize, tag, and search your 
 
 </div>
 
+## Features
+
+- **Source** images from anywhere on your local file system.
+- Create hierarchical **tags** and assign them to individual images or entire folders.
+
 ## Installation
 
 To install Fotobinder, simply visit the [Releases Page](https://github.com/cgund98/fotobinder/releases) and download the installer for your OS of choice.
@@ -37,9 +42,9 @@ The application is entirely open-source and any contributions are welcome.
 
 ### Development Environment
 
-This app is created with the Rust framework [Tauri](https://tauri.app). Please begin by installing the dependencies specified in Tauri's [Prerequisites Page](https://tauri.app/v1/guides/getting-started/prerequisites/).
+The app was built using the Rust framework [Tauri](https://tauri.app). Please begin by installing the dependencies specified in Tauri's [Prerequisites Page](https://tauri.app/v1/guides/getting-started/prerequisites/).
 
-Then you can simply run/build the application as follows:
+Then you can simply build the application as follows:
 
 ```bash
 # Install JavaScript dependencies
