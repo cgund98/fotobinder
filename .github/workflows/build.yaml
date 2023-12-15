@@ -17,6 +17,12 @@ jobs:
         with:
           node-version: 20
 
+      - name: Install NPM packages
+        run: npm install
+
+      - name: Build Frontend
+        run: npm run build
+
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
 
@@ -30,9 +36,3 @@ jobs:
 
       - name: Run Clippy
         run: cd src-tauri && cargo clippy --all-targets --all-features
-
-      - name: Install NPM packages
-        run: npm install
-
-      - name: Build Frontend
-        run: npm run build
