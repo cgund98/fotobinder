@@ -39,6 +39,12 @@ export const get = async (id: string): Promise<Source> => {
 	return source;
 };
 
+export const update = async (id: string, name: string): Promise<Source> => {
+	const source = (await invoke('update_source', { id, name })) as Source;
+
+	return source;
+};
+
 export const remove = async (id: string): Promise<Source> => {
 	const source = (await invoke('delete_source', { id })) as Source;
 

@@ -13,6 +13,7 @@ async fn main() {
             cmd::source::get_source,
             cmd::source::delete_source,
             cmd::source::list_sources,
+            cmd::source::update_source,
             cmd::fs_entry::scan_source_dir,
             cmd::fs_entry::list_fs_entries_by_source_id,
             cmd::fs_entry::generate_missing_thumbnails,

@@ -82,6 +82,14 @@ impl Controller {
         self.repo.get_by_id(id)
     }
 
+    pub fn update_by_id(&self, id: &str, name: &str) -> Result<entity::Source, AppError> {
+        let mut source = self.repo.get_by_id(id)?;
+
+        source.name = String::from(name);
+
+        self.repo.save(source)
+    }
+
     pub fn list(&self) -> Result<Vec<entity::Source>, AppError> {
         self.repo.list()
     }

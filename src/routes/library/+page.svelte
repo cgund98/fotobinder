@@ -2,11 +2,11 @@
 	import { routeToPage } from '$lib/nav/route';
 
 	import { list } from '$lib/api/source';
-	import { writable } from 'svelte/store';
 	import Separator from '$lib/components/decoration/Separator.svelte';
 	import FolderCard from '$lib/components/library/folder/FolderCard.svelte';
 	import PathHeader from '$lib/components/library/header/PathHeader.svelte';
 	import NewSourceModal from '$lib/components/library/source/NewSourceModal.svelte';
+	import EditSourceModal from '$lib/components/library/source/EditSourceModal.svelte';
 	import { type Sources, remove } from '$lib/api/source';
 	import { catchBad, good } from '$lib/store/alerts';
 	import Menu from '$lib/components/menu/Menu.svelte';
@@ -16,8 +16,10 @@
 	import ProgressWrapper from '$lib/components/progress/ProgressWrapper.svelte';
 	import ThumbnailQueueProgress from '$lib/components/progress/ThumbnailQueueProgress.svelte';
 	import { sources as navSources } from '$lib/store/nav';
+	import Pencil from '$lib/components/icons/Pencil.svelte';
 
 	let showNewSource = false;
+	let showUpdateSource = false;
 	let loading = false;
 
 	/* Fetch sources */
@@ -63,6 +65,12 @@
 	};
 
 	$: menuOptions = [
+		{
+			label: 'Edit',
+			icon: Pencil,
+			action: () => (showUpdateSource = true),
+			disabled: selected === undefined
+		},
 		{
 			label: 'Delete',
 			icon: Trash,
@@ -123,6 +131,16 @@
 	<NewSourceModal
 		onClose={() => {
 			showNewSource = false;
+			updateSources();
+		}}
+	/>
+{/if}
+
+{#if showUpdateSource}
+	<EditSourceModal
+		sourceId={selected || ''}
+		onClose={() => {
+			showUpdateSource = false;
 			updateSources();
 		}}
 	/>
