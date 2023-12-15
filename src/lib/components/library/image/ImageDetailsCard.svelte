@@ -139,7 +139,7 @@
 				</div>
 			</div>
 			<div class="w-[250px] grow-0 px-3 py-2 relative">
-				<div class="h-full overflow-y-scroll pb-14">
+				<div class="h-full pb-14">
 					<div class="flex justify-between items-center mb-2">
 						<h2 class="text-lg font-bold truncate">
 							<Tooltip title={name} className="truncate">

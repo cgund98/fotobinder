@@ -380,6 +380,102 @@ impl Repo {
         Ok(entries)
     }
 
+    pub fn list_by_overlapping_tags(
+        &self,
+        includes: Vec<String>,
+        excludes: Vec<String>,
+    ) -> Result<Vec<entity::FsEntry>, crate::errors::AppError> {
+        let pool = self.pool.get()?;
+
+        let excludes_str = excludes
+            .iter()
+            .map(|x| format!("'{}'", x))
+            .collect::<Vec<_>>()
+            .join(", ");
+        let includes_str = includes
+            .iter()
+            .map(|x| format!("'{}'", x))
+            .collect::<Vec<_>>()
+            .join(", ");
+
+        let sql = format!(
+            "WITH path_results AS (
+                SELECT fs_entries.relative_path, fs_entries.source_id, path_tags.tag_id
+                from path_tags
+                INNER JOIN fs_entries
+                    ON fs_entries.relative_path LIKE path_tags.base_path || '%'
+                    AND fs_entries.source_id = path_tags.source_id
+                WHERE fs_entries.fs_type = 'File'
+            ), image_results AS (
+                SELECT fs_entries.relative_path, fs_entries.source_id, image_tags.tag_id
+                from image_tags
+                INNER JOIN fs_entries
+                    ON fs_entries.relative_path = image_tags.relative_path
+                    AND fs_entries.source_id = image_tags.source_id
+                WHERE fs_entries.fs_type = 'File'
+            ), tags_union AS (
+                SELECT * FROM path_results
+                UNION
+                SELECT * FROM image_results
+            ), excludes_results AS (
+                SELECT DISTINCT * FROM tags_union
+                WHERE tag_id IN ({excludes_str})
+            ), includes_results AS (
+                SELECT DISTINCT * FROM tags_union
+                WHERE tag_id IN ({includes_str})
+            ), include_agg AS (
+                SELECT relative_path, source_id, count(*) AS cnt
+                FROM includes_results
+                GROUP BY relative_path, source_id
+            ), results AS (
+                SELECT inc.* FROM includes_results inc
+                LEFT JOIN excludes_results exc
+                    ON inc.relative_path = exc.relative_path
+                    AND inc.source_id = exc.source_id
+                WHERE exc.relative_path IS NULL
+            ), filtered_results AS (
+                SELECT * FROM results r
+                INNER JOIN include_agg inc
+                ON inc.relative_path = r.relative_path AND inc.source_id = r.source_id
+                WHERE inc.cnt = ?1
+            )
+            SELECT DISTINCT fe.*
+            FROM filtered_results r
+            INNER JOIN fs_entries fe
+                ON fe.relative_path = r.relative_path
+                AND fe.source_id = r.source_id"
+        );
+
+        let mut stmt = pool.prepare(&sql)?;
+
+        // Map results
+        let ent_iter = stmt.query_map([includes.len()], |row| {
+            Ok(entity::DbFsEntry {
+                relative_path: row.get(0)?,
+                base_path: row.get(1)?,
+                source_id: row.get(2)?,
+                fs_type: row.get(3)?,
+                hidden: row.get(4)?,
+                sha256: row.get(5)?,
+                image_type: row.get(6)?,
+                thumbnail_path: row.get(7)?,
+                thumbnail_generating: row.get(8)?,
+                additional_fields: row.get(9)?,
+            })
+        })?;
+
+        let mut entries: Vec<entity::FsEntry> = Vec::new();
+
+        for db_entry in ent_iter {
+            let d = db_entry?;
+            let entry = entity::FsEntry::from(d);
+
+            entries.push(entry);
+        }
+
+        Ok(entries)
+    }
+
     pub fn delete(
         &self,
         relative_path: &str,

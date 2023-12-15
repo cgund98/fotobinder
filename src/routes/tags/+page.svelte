@@ -105,7 +105,7 @@
 							variant={IconVariant.Embedded}
 							onClick={() => {
 								const rules = [{ id: tag.id, ruleType: 'include', tagId: tag.id }];
-								saveSearch(rules);
+								saveSearch({ rules, overlapIncludes: false });
 								routeToPage('/search/results');
 							}}
 							label="View Labeled Images"
@@ -159,7 +159,7 @@
 												variant={IconVariant.Embedded}
 												onClick={() => {
 													const rules = [{ id: child.id, ruleType: 'include', tagId: child.id }];
-													saveSearch(rules);
+													saveSearch({ rules, overlapIncludes: false });
 													routeToPage('/search/results');
 												}}
 												label="View Labeled Images"

@@ -67,7 +67,7 @@
 	const fetchResults = async () => {
 		loading = true;
 		try {
-			const rules = load();
+			const { rules, overlapIncludes } = load();
 
 			// Parse included and excluded tags
 			const includes = rules
@@ -78,7 +78,7 @@
 				.map((rule) => rule.tagId || '');
 
 			// Fetch tags
-			const res = await listByTags(includes, excludes);
+			const res = await listByTags(includes, excludes, overlapIncludes);
 
 			// Map thumbnail paths to asset url
 			const dataDir = await appDataDir();

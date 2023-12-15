@@ -82,8 +82,8 @@
 	$: filterSearch(search);
 
 	// 🤨🤨 - I know this is kind of spaghetti but it works
-	const refreshTags = () => {
-		const doFn = async () => {
+	const refreshTags = async () => {
+		try {
 			const res = await list();
 
 			let state = res.tags.reduce((b, t) => {
@@ -131,9 +131,9 @@
 			);
 
 			filteredTagsBlock.set({ ...$tagsBlock });
-		};
-
-		doFn().catch(catchBad);
+		} catch (err) {
+			catchBad(err);
+		}
 	};
 
 	const submit = () => {
@@ -179,7 +179,7 @@
 />
 
 <Modal>
-	<div class="overflow-y-scroll h-full">
+	<div class="overflow-y-auto h-full">
 		<div class="flex flex-row justify-between items-center">
 			<h1 class="text-lg font-bold pb-1">Edit Tags</h1>
 			<div role="button" class="-mt-1">
@@ -206,7 +206,7 @@
 			<div class="w-1/2 pr-4 relative">
 				<h3 class="text-md font-bold">All Tags</h3>
 				<div
-					class="mt-2 flex-col space-y-1.5 overflow-scroll min-h-[200px] max-h-[300px] pb-4 relative"
+					class="mt-2 flex-col space-y-1.5 overflow-y-auto min-h-[200px] max-h-[300px] pb-4 relative"
 				>
 					{#each Object.values($filteredTagsBlock) as { tag, children, collapsed } (tag.id)}
 						<Checkbox

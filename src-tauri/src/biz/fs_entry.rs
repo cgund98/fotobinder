@@ -255,7 +255,12 @@ impl Controller {
         &self,
         includes: Vec<String>,
         excludes: Vec<String>,
+        overlap_includes: bool,
     ) -> Result<Vec<entity::FsEntry>, AppError> {
+        if overlap_includes {
+            return self.repo.list_by_overlapping_tags(includes, excludes);
+        }
+
         self.repo.list_by_tags(includes, excludes)
     }
 
