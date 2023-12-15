@@ -43,7 +43,7 @@
 			"targets": "all",
 			"identifier": "fotobinder",
 			"category": "Photography",
-			"icon": ["icons/icon.ico"]
+			"icon": ["icons/icon.png", "icons/icon.ico"]
 		},
 		"security": {
 			"csp": null
