@@ -15,7 +15,8 @@ _Fotobinder is a free desktop app that helps you organize, tag, and search your 
 [Installation](#installation) •
 [Contributing](#contributing)
 
-<img src="./docs/Swiping.png" alt="swiping" height="600"/>
+<video src="https://github.com/cgund98/fotobinder/assets/17605568/a5f2ad0f-fbca-4dfb-a166-328f2e5afdaa" alt="swiping" height="600"/>
+
 </div>
 
 ## Installation
