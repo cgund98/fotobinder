@@ -99,8 +99,11 @@ fn init_controllers(app: &mut tauri::App, pool: Arc<PoolType>) -> InitResult {
     *state.collection_image_controller.lock().unwrap() = Some(collection_image_controller);
 
     // Initialize thumbnail processes
-    let num_threads = (num_cpus::get() - 1) / 2;
-    for _ in 1..num_threads {
+    let mut num_threads = (num_cpus::get() - 1) / 2;
+    if num_threads == 1 {
+        num_threads = 4;
+    }
+    for _ in 0..(num_threads) {
         tokio::spawn(queue::queue_proc(th_queue.clone(), fs_entry_repo.clone()));
     }
 
