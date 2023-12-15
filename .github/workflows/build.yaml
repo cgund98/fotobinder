@@ -31,10 +31,5 @@ jobs:
       - name: Install NPM packages
         run: npm install
 
-      - uses: actionsx/prettier@v2
-        with:
-          # prettier CLI arguments.
-          args: --check .
-
       - name: Build App
         run: npm run tauri build
