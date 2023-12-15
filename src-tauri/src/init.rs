@@ -25,6 +25,11 @@ fn init_db(app: &mut tauri::App) -> Result<Arc<PoolType>, Box<dyn std::error::Er
     // Find app path
     let binding = handle.path_resolver().app_data_dir().unwrap();
     let data_path = binding.as_path();
+
+    if !data_path.exists() {
+        std::fs::create_dir_all(data_path)?;
+    }
+
     let db_file = data_path.join("main.db");
 
     // Initialize connection
