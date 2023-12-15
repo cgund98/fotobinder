@@ -15,6 +15,11 @@
 	import NewTagModal from '$lib/components/tags/NewTagModal.svelte';
 	import PageTransitionWrapper from '$lib/components/layout/PageTransitionWrapper.svelte';
 	import EditTagModal from '$lib/components/tags/EditTagModal.svelte';
+	import { slide } from 'svelte/transition';
+	import { quintOut } from 'svelte/easing';
+	import { save as saveSearch } from '$lib/store/search';
+	import Search from '$lib/components/icons/Search.svelte';
+	import { routeToPage } from '$lib/nav/route';
 
 	let tags = writable<Tag[]>([]);
 
@@ -22,6 +27,7 @@
 		[key: string]: {
 			tag: Tag;
 			children: Tag[];
+			collapsed: boolean;
 		};
 	}
 	$: tagsBlock = $tags
@@ -31,7 +37,7 @@
 			return 0;
 		})
 		.reduce((cur, tag) => {
-			if (tag.parent_id === null) cur[tag.id] = { tag, children: [] };
+			if (tag.parent_id === null) cur[tag.id] = { tag, children: [], collapsed: false };
 			else if (cur[tag.parent_id]) cur[tag.parent_id].children.push(tag);
 
 			return cur;
@@ -69,7 +75,7 @@
 	<Separator className="my-2" />
 
 	<div class="px-2">
-		{#each Object.values(tagsBlock) as { tag, children }, i (tag.id)}
+		{#each Object.values(tagsBlock) as { tag, children, collapsed }, i (tag.id)}
 			<div class="hover:bg-gray-800 rounded flex flex-row align-center w-full justify-between">
 				<div class="flex-grow flex flex-row">
 					<div class="text-left w-8 flex flex-col justify-around">
@@ -78,6 +84,13 @@
 								icon={ChevronDown}
 								variant={IconVariant.Embedded}
 								label="Collapse Children"
+								className="duration-200 ease-out {collapsed ? 'rotate-180' : ''}"
+								onClick={() => {
+									tagsBlock = {
+										...tagsBlock,
+										[tag.id]: { tag, children, collapsed: !collapsed }
+									};
+								}}
 							/>
 						{/if}
 					</div>
@@ -86,6 +99,18 @@
 					</div>
 				</div>
 				<div class="flex flex-row justify-end space-x-2">
+					<div class="flex flex-col justify-around">
+						<IconButton
+							icon={Search}
+							variant={IconVariant.Embedded}
+							onClick={() => {
+								const rules = [{ id: tag.id, ruleType: 'include', tagId: tag.id }];
+								saveSearch(rules);
+								routeToPage('/search/results');
+							}}
+							label="View Labeled Images"
+						/>
+					</div>
 					<div class="flex flex-col justify-around">
 						<IconButton
 							icon={Pencil}
@@ -113,51 +138,65 @@
 					</div>
 				</div>
 			</div>
-			{#if children.length > 0}
-				<Separator className="my-1 opacity-50" />
-				<div class="pl-[13px]">
-					<div class="border-l-2 border-teal-800 pl-2">
-						{#each children as child, idx}
-							<div
-								class="hover:bg-gray-800 rounded pl-6 flex flex-row align-center w-full justify-between"
-							>
-								<div class="flex-grow flex flex-row">
-									<div class="py-1.5">
-										{child.name}
+			{#if children.length > 0 && !collapsed}
+				<div transition:slide={{ duration: 200, easing: quintOut }}>
+					<Separator className="my-1 opacity-50" />
+					<div class="pl-[13px]">
+						<div class="border-l-2 border-teal-800 pl-2">
+							{#each children as child, idx}
+								<div
+									class="hover:bg-gray-800 rounded pl-6 flex flex-row align-center w-full justify-between"
+								>
+									<div class="flex-grow flex flex-row">
+										<div class="py-1.5">
+											{child.name}
+										</div>
+									</div>
+									<div class="flex flex-row justify-end space-x-2">
+										<div class="flex flex-col justify-around">
+											<IconButton
+												icon={Search}
+												variant={IconVariant.Embedded}
+												onClick={() => {
+													const rules = [{ id: child.id, ruleType: 'include', tagId: child.id }];
+													saveSearch(rules);
+													routeToPage('/search/results');
+												}}
+												label="View Labeled Images"
+											/>
+										</div>
+										<div class="flex flex-col justify-around">
+											<IconButton
+												icon={Pencil}
+												variant={IconVariant.Embedded}
+												onClick={() => {
+													selTagId = child.id;
+													showEditTag = true;
+												}}
+												label="Edit Tag"
+											/>
+										</div>
+										<div class="flex flex-col justify-around">
+											<IconButton
+												icon={Trash}
+												onClick={() =>
+													remove(child.id)
+														.then(() => {
+															refreshTags();
+															good(`Deleted tag '${child.name}'`);
+														})
+														.catch(catchBad)}
+												variant={IconVariant.Embedded}
+												label="Delete Tag"
+											/>
+										</div>
 									</div>
 								</div>
-								<div class="flex flex-row justify-end space-x-2">
-									<div class="flex flex-col justify-around">
-										<IconButton
-											icon={Pencil}
-											variant={IconVariant.Embedded}
-											onClick={() => {
-												selTagId = child.id;
-												showEditTag = true;
-											}}
-											label="Edit Tag"
-										/>
-									</div>
-									<div class="flex flex-col justify-around">
-										<IconButton
-											icon={Trash}
-											onClick={() =>
-												remove(child.id)
-													.then(() => {
-														refreshTags();
-														good(`Deleted tag '${child.name}'`);
-													})
-													.catch(catchBad)}
-											variant={IconVariant.Embedded}
-											label="Delete Tag"
-										/>
-									</div>
-								</div>
-							</div>
-							{#if idx !== children.length - 1}
-								<Separator className="my-1 opacity-50" />
-							{/if}
-						{/each}
+								{#if idx !== children.length - 1}
+									<Separator className="my-1 opacity-50" />
+								{/if}
+							{/each}
+						</div>
 					</div>
 				</div>
 			{/if}

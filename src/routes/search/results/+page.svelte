@@ -21,6 +21,8 @@
 	import ProgressWrapper from '$lib/components/progress/ProgressWrapper.svelte';
 	import Tag from '$lib/components/icons/Tag.svelte';
 	import PaginationControls from '$lib/components/nav/pagination/PaginationControls.svelte';
+	import IconButton, { Variant } from '$lib/components/button/IconButton.svelte';
+	import Shuffle from '$lib/components/icons/Shuffle.svelte';
 
 	interface Image {
 		id: string;
@@ -97,11 +99,25 @@
 					};
 				})
 			);
+			shuffleArray(newImages);
 			images.set(newImages);
 		} catch (err) {
 			catchBad(err);
 		}
 		loading = false;
+	};
+
+	const shuffleArray = (array: any[]) => {
+		for (let i = array.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[array[i], array[j]] = [array[j], array[i]];
+		}
+	};
+
+	const shuffleImages = () => {
+		const newImages = $images;
+		shuffleArray(newImages);
+		images.set(newImages);
 	};
 
 	fetchResults();
@@ -157,6 +173,12 @@
 			</div>
 
 			<div class="flex flex-row space-x-3 items-center">
+				<IconButton
+					label="Shuffle Results"
+					icon={Shuffle}
+					variant={Variant.Embedded}
+					onClick={shuffleImages}
+				/>
 				<Button
 					title="Modify Tags"
 					className="disabled:bg-teal-700"
