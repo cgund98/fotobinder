@@ -6,6 +6,7 @@
 <div
 	in:fly={{ delay: 100, duration: 100, easing: quintIn }}
 	out:fly={{ duration: 100, easing: quintOut }}
+	class="relative"
 >
 	<slot />
 </div>

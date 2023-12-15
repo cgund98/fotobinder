@@ -30,6 +30,7 @@
 	import PageTransitionWrapper from '$lib/components/layout/PageTransitionWrapper.svelte';
 	import ThumbnailQueueProgress from '$lib/components/progress/ThumbnailQueueProgress.svelte';
 	import ProgressWrapper from '$lib/components/progress/ProgressWrapper.svelte';
+	import PaginationControls from '$lib/components/nav/pagination/PaginationControls.svelte';
 
 	let loading = false;
 
@@ -221,6 +222,14 @@
 	$: relativePaths = imagesSelected
 		? $images.filter((i) => selectedImages.has(i.id)).map((i) => i.relativePath)
 		: $folders.filter((i) => $selectedFolders.has(i.id)).map((i) => i.relativePath);
+
+	let headerHeight: number;
+	let headerWidth: number;
+
+	// Pagination
+	const PAGE_SIZE = 150;
+	let curPage: number = 0;
+	$: pageCount = Math.ceil($images.length / PAGE_SIZE);
 </script>
 
 {#if loading}
@@ -228,50 +237,65 @@
 {/if}
 
 <PageTransitionWrapper>
-	<PathHeader bind:path={$navEntries} />
+	<div
+		class="fixed w-full top-0 pt-4 bg-bg-gray z-10"
+		style:width="{headerWidth}px"
+		bind:clientHeight={headerHeight}
+	>
+		<PathHeader bind:path={$navEntries} />
 
-	<div class="flex justify-between pb-1 px-2">
-		<div class="flex flex-col justify-end">
-			<p class="text-gray-500 text-base">
-				{#if noSelection}
-					No items selected. <button
-						class="text-teal-400 font-medium ml-2"
-						on:click={() => (selectedImages = new Set($images.map((i) => i.id)))}>Select all</button
-					>
-				{:else if foldersSelected}
-					{$selectedFolders.size} folders selected.
-					<button
-						class="text-teal-400 font-medium ml-2"
-						on:click={() => selectedFolders.set(new Set())}
-						>Deselect all
-					</button>
-				{:else if imagesSelected}
-					{selectedImages.size} images selected.
-					<button
-						class="text-teal-400 font-medium ml-2"
-						on:click={() => (selectedImages = new Set())}
-						>Deselect all
-					</button>
-				{/if}
-			</p>
+		<div class="flex justify-between pb-1 px-2">
+			<div class="flex flex-col justify-end">
+				<p class="text-gray-500 text-base">
+					{#if noSelection}
+						No items selected. <button
+							class="text-teal-400 font-medium ml-2"
+							on:click={() => {
+								if ($images.length > 0) selectedImages = new Set($images.map((i) => i.id));
+								else selectedFolders.set(new Set($folders.map((i) => i.id)));
+							}}>Select all</button
+						>
+					{:else if foldersSelected}
+						{$selectedFolders.size} folders selected.
+						<button
+							class="text-teal-400 font-medium ml-2"
+							on:click={() => selectedFolders.set(new Set())}
+							>Deselect all
+						</button>
+					{:else if imagesSelected}
+						{selectedImages.size} images selected.
+						<button
+							class="text-teal-400 font-medium ml-2"
+							on:click={() => (selectedImages = new Set())}
+							>Deselect all
+						</button>
+					{/if}
+				</p>
+			</div>
+
+			<div class="flex flex-row space-x-3 items-center">
+				<Button
+					title="Modify Tags"
+					className="disabled:bg-teal-700"
+					onClick={() => {
+						showEditTags = true;
+					}}
+					disabled={noSelection}
+				>
+					<Tag className="w-[15px] -mt-[1px]" />
+				</Button>
+				<Menu label="Actions" options={menuOptions} position="right" />
+			</div>
 		</div>
 
-		<div class="flex flex-row space-x-3 items-center">
-			<Button
-				title="Modify Tags"
-				className="disabled:bg-teal-700"
-				onClick={() => {
-					showEditTags = true;
-				}}
-				disabled={noSelection}
-			>
-				<Tag className="w-[15px] -mt-[1px]" />
-			</Button>
-			<Menu label="Actions" options={menuOptions} position="right" />
-		</div>
+		<Separator className="my-2" />
 	</div>
 
-	<Separator className="my-2" />
+	<div style="padding-top: {headerHeight}px" class="w-full -mt-4" bind:clientWidth={headerWidth} />
+
+	{#if pageCount > 1}
+		<PaginationControls bind:curPage {pageCount} pageSize={PAGE_SIZE} maxItems={$images.length} />
+	{/if}
 
 	{#if $folders.length === 0 && $images.length === 0}
 		<p class="text-left px-2">Folder is empty.</p>
@@ -305,8 +329,8 @@
 		<Separator className="my-2" />
 	{/if}
 
-	<div class="w-full flex flex-wrap mt-1">
-		{#each $images as image, idx (image.id)}
+	<div class="w-full flex flex-wrap mt-1 mb-2">
+		{#each $images.slice(curPage * PAGE_SIZE, (curPage + 1) * PAGE_SIZE) as image, idx (image.id)}
 			<div class="w-1/2 sm:w-1/3 md:w-1/4 xl:w-1/5 2xl:w-1/6 p-1">
 				<ImageCard
 					onChange={(checked) => {
@@ -331,6 +355,12 @@
 			</div>
 		{/each}
 	</div>
+
+	{#if pageCount > 1}
+		<Separator className="my-2" />
+		<PaginationControls bind:curPage {pageCount} pageSize={PAGE_SIZE} maxItems={$images.length} />
+		<div class="py-2" />
+	{/if}
 </PageTransitionWrapper>
 
 <ThumbnailQueueProgress />

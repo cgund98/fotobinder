@@ -101,8 +101,7 @@ impl Repo {
         FROM fs_entries \
         WHERE \
             source_id = ?1 AND
-            base_path = ?2 \
-            LIMIT 1000")?;
+            base_path = ?2")?;
 
         // Map results
         let ent_iter = stmt.query_map([source_id, path_prefix], |row| {
