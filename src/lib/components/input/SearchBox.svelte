@@ -71,7 +71,7 @@
 		{#if open}
 			<div
 				transition:scale={{ duration: 200, easing: quintOut }}
-				class="z-10 inset-x-0 border-2 border-gray-700 text-base list-none bg-gray-800 rounded-lg divide-y divide-gray-100 shadow-xl absolute my-2 max-h-32 overflow-y-scroll"
+				class="z-10 inset-x-0 border-2 border-gray-700 text-base list-none bg-gray-800 rounded-lg divide-y divide-gray-100 shadow-xl absolute my-2 max-h-32 overflow-y-auto"
 			>
 				<ul class="">
 					{#each filteredOptions as option (option.value)}

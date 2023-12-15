@@ -37,7 +37,7 @@
 		{#if open}
 			<div
 				transition:scale={{ duration: 200, easing: quintOut }}
-				class="absolute {positionCSS} z-10 text-base bg-gray-800 rounded-lg divide-y divide-gray-100 shadow my-2 overflow-y-scroll"
+				class="absolute {positionCSS} z-10 text-base bg-gray-800 rounded-lg divide-y divide-gray-100 shadow my-2 overflow-y-auto"
 			>
 				<div class="flex flex-col">
 					{#each options as option, idx}
