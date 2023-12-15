@@ -99,7 +99,7 @@ fn init_controllers(app: &mut tauri::App, pool: Arc<PoolType>) -> InitResult {
     *state.collection_image_controller.lock().unwrap() = Some(collection_image_controller);
 
     // Initialize thumbnail processes
-    let mut num_threads = (num_cpus::get() - 1) / 2;
+    let mut num_threads = (num_cpus::get()) / 2;
     if num_threads == 1 {
         num_threads = 4;
     }
