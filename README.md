@@ -21,8 +21,10 @@ _Fotobinder is a free desktop app that helps you organize, tag, and search your 
 
 ## Features
 
-- **Source** images from anywhere on your local file system.
-- Create hierarchical **tags** and assign them to individual images or entire folders.
+- **Source images** from anywhere on your local file system.
+- Create **hierarchical tags** and assign them to individual images or entire folders.
+- Build **modular queries** to search for specific tag combinations.
+- Save images for later by adding them to **collections**.
 
 ## Installation
 
