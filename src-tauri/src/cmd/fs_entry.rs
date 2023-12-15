@@ -49,10 +49,11 @@ pub fn list_fs_entries_by_collection_id(
 pub fn list_fs_entries_by_tags(
     includes: Vec<String>,
     excludes: Vec<String>,
+    overlap_includes: bool,
     handle: tauri::AppHandle,
 ) -> Result<FsEntries, AppError> {
     handle
-        .fs_entry_ctrl(|ctrl| ctrl.list_by_tags(includes, excludes))
+        .fs_entry_ctrl(|ctrl| ctrl.list_by_tags(includes, excludes, overlap_includes))
         .map(FsEntries::from)
 }
 

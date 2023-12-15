@@ -63,10 +63,15 @@ export const getThumbnailQueueSize = async () => {
 	return (await invoke('get_thumbnail_queue_size', {})) as number;
 };
 
-export const listByTags = async (includes: string[], excludes: string[]) => {
+export const listByTags = async (
+	includes: string[],
+	excludes: string[],
+	overlapIncludes: boolean
+) => {
 	const entries = (await invoke('list_fs_entries_by_tags', {
 		includes,
-		excludes
+		excludes,
+		overlapIncludes
 	})) as FsEntries;
 
 	return entries;

@@ -368,7 +368,7 @@
 {#if showEditTags}
 	<EditTagsModal
 		{relativePaths}
-		sourceIds={$images.filter((i) => selectedImages.has(i.id)).map((i) => i.sourceId)}
+		sourceIds={[...Array(relativePaths.length)].map((_) => data.sourceId)}
 		isImage={imagesSelected}
 		onClose={() => {
 			showEditTags = false;

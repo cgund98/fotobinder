@@ -82,8 +82,8 @@
 	$: filterSearch(search);
 
 	// 🤨🤨 - I know this is kind of spaghetti but it works
-	const refreshTags = () => {
-		const doFn = async () => {
+	const refreshTags = async () => {
+		try {
 			const res = await list();
 
 			let state = res.tags.reduce((b, t) => {
@@ -131,9 +131,9 @@
 			);
 
 			filteredTagsBlock.set({ ...$tagsBlock });
-		};
-
-		doFn().catch(catchBad);
+		} catch (err) {
+			catchBad(err);
+		}
 	};
 
 	const submit = () => {

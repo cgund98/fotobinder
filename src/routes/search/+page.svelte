@@ -18,6 +18,7 @@
 	import { type SearchRule, save, load } from '$lib/store/search';
 	import { routeToPage } from '$lib/nav/route';
 	import PageTransitionWrapper from '$lib/components/layout/PageTransitionWrapper.svelte';
+	import Checkbox from '$lib/components/input/Checkbox.svelte';
 
 	// Fetch tags
 	let tagOptions: { label: string; value: string }[] = [];
@@ -56,12 +57,8 @@
 		{ label: 'Exclude', value: 'exclude' }
 	];
 
-	let rules: SearchRule[] = load();
+	let { rules, overlapIncludes } = load();
 	if (rules.length === 0) rules = [{ id: v4(), ruleType: ruleTypeOptions[0].value }];
-
-	// let additionalOptions = {
-	// 	overlapIncluded: { label: 'Included tags intersect one another', value: false }
-	// };
 
 	$: valid = rules.reduce(
 		(prev, rule) => prev && rule.tagId !== undefined && rule.tagId.length > 0,
@@ -157,30 +154,25 @@
 		</Button>
 	</div>
 
-	<!-- <div class="my-4">
-	<Separator />
-</div>
-
-<div class="flex flex-col mt-4 px-2 space-y-2">
-	<div>
-		<h3 class="font-bold">Extra Options</h3>
+	<div class="my-4">
+		<Separator />
 	</div>
 
-	<div class="flex flex-col space-y-2">
-		{#each Object.entries(additionalOptions) as [id, option]}
+	<div class="flex flex-col mt-4 px-2 space-y-2">
+		<div>
+			<h3 class="font-bold">Extra Options</h3>
+		</div>
+
+		<div class="flex flex-col space-y-2">
 			<Checkbox
-				label={option.label}
-				checked={option.value}
+				label="Results must belong to every included tag."
+				checked={overlapIncludes}
 				onClick={() => {
-					additionalOptions = {
-						...additionalOptions,
-						[id]: { ...option, value: !option.value }
-					};
+					overlapIncludes = !overlapIncludes;
 				}}
 			/>
-		{/each}
+		</div>
 	</div>
-</div> -->
 
 	<div class="my-4">
 		<Separator />
@@ -193,7 +185,8 @@
 				variant={Variant.Warn}
 				onClick={() => {
 					rules = [{ id: v4(), ruleType: ruleTypeOptions[0].value }];
-					save(rules);
+					overlapIncludes = false;
+					save({ rules, overlapIncludes });
 				}}
 			>
 				<Reset className="w-[15px]" />
@@ -207,7 +200,7 @@
 				className=""
 				disabled={!valid}
 				onClick={() => {
-					save(rules);
+					save({ rules, overlapIncludes });
 					routeToPage('/search/results');
 				}}
 			>
