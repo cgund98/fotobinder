@@ -1,45 +1,61 @@
 {
-  "build": {
-    "beforeDevCommand": "npm run dev",
-    "beforeBuildCommand": "npm run build",
-    "devPath": "http://localhost:1420",
-    "distDir": "../dist"
-  },
-  "package": {
-    "productName": "fotobinder",
-    "version": "0.0.0"
-  },
-  "tauri": {
-    "allowlist": {
-      "all": false,
-      "shell": {
-        "all": false,
-        "open": true
-      }
-    },
-    "bundle": {
-      "active": true,
-      "targets": "all",
-      "identifier": "com.tauri.dev",
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ]
-    },
-    "security": {
-      "csp": null
-    },
-    "windows": [
-      {
-        "fullscreen": false,
-        "resizable": true,
-        "title": "fotobinder",
-        "width": 1200,
-        "height": 800
-      }
-    ]
-  }
+	"build": {
+		"beforeDevCommand": "npm run dev",
+		"beforeBuildCommand": "npm run build",
+		"devPath": "http://localhost:1420",
+		"distDir": "../build"
+	},
+	"package": {
+		"productName": "fotobinder",
+		"version": "0.0.0"
+	},
+	"tauri": {
+		"allowlist": {
+			"path": {
+				"all": true
+			},
+			"all": false,
+			"shell": {
+				"all": false,
+				"open": true
+			},
+			"dialog": {
+				"all": true,
+				"ask": true,
+				"confirm": true,
+				"message": true,
+				"open": true,
+				"save": true
+			},
+			"fs": {
+				"readFile": true,
+				"readDir": true,
+				"scope": ["$APPDATA/thumbnails/*"]
+			},
+			"protocol": {
+				"asset": true,
+				"all": false,
+				"assetScope": ["$APPDATA/thumbnails/*"]
+			}
+		},
+		"bundle": {
+			"active": true,
+			"targets": "all",
+			"identifier": "fotobinder",
+			"category": "Photography",
+			"icon": ["icons/icon.png", "icons/icon.ico"]
+		},
+		"security": {
+			"csp": null
+		},
+		"windows": [
+			{
+				"fullscreen": false,
+				"resizable": true,
+				"title": "fotobinder",
+				"width": 1070,
+				"height": 700
+			}
+		]
+	}
 }
