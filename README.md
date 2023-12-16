@@ -26,6 +26,16 @@ _Fotobinder is a free desktop app that helps you organize, tag, and search your 
 - Build **modular queries** to search for specific tag combinations.
 - Save images for later by adding them to **collections**.
 
+### Donations
+
+<a href="https://www.buymeacoffee.com/cgund98" target="_blank" title="buymeacoffee" align="right">
+  <img src="https://iili.io/JIYMmUN.gif"  alt="buymeacoffee-blue-badge" style="width: 120px;" align="right">
+</a>
+
+I made this project simply to improve my own efficiency, never with the idea of selling it.
+
+If you happen to find it worthwhile and want to say thanks, feel free [leave me a tip](https://www.buymeacoffee.com/cgund98)!
+
 ## Installation
 
 To install Fotobinder, simply visit the [Releases Page](https://github.com/cgund98/fotobinder/releases) and download the installer for your OS of choice.
